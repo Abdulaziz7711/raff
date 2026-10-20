@@ -1,3 +1,5 @@
+import { here } from './router.js';
+
 export const $ = id => document.getElementById(id);
 export const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 export const YEAR = String(new Date().getFullYear());
@@ -30,4 +32,4 @@ export function toast(msg) {
   clearTimeout(toastT); toastT = setTimeout(() => { el.hidden = true; }, 2600);
 }
 export const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-export const qsGet = k => new URLSearchParams(location.search).get(k);
+export const qsGet = k => new URLSearchParams(here().search).get(k);

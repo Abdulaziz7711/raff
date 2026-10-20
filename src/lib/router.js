@@ -1,6 +1,17 @@
 // Tiny history-API router. Pages are async functions that render into #view.
+// The offline demo build runs inside a frame whose URL can't change, so it keeps the current path in memory
+// (history entries still carry it, so the back button works).
+const MEM = import.meta.env.VITE_MEMORY_ROUTER === 'true';
+let memPath = '/';
 const routes = [];
 let current = 0;
+
+// the current path and query string, whichever mode we're in
+export function here() {
+  if (!MEM) return { path: location.pathname, search: location.search };
+  const h = memPath, i = h.indexOf('?');
+  return i < 0 ? { path: h, search: '' } : { path: h.slice(0, i), search: h.slice(i) };
+}
 
 export function route(pattern, handler) {
   const keys = [];
@@ -10,7 +21,7 @@ export function route(pattern, handler) {
 
 export async function render() {
   const id = ++current;
-  const path = decodeURI(location.pathname);
+  const path = decodeURI(here().path);
   for (const r of routes) {
     const m = r.re.exec(path);
     if (!m) continue;
@@ -25,8 +36,12 @@ export async function render() {
 }
 
 export function navigate(to, { replace = false, keepScroll = false } = {}) {
-  if (to === location.pathname + location.search && !replace) return render();
-  history[replace ? 'replaceState' : 'pushState']({}, '', to);
+  const { path, search } = here();
+  if (to === path + search && !replace) return render();
+  if (MEM) {
+    memPath = to;
+    try { history[replace ? 'replaceState' : 'pushState']({ p: to }, ''); } catch { }
+  } else history[replace ? 'replaceState' : 'pushState']({}, '', to);
   if (!keepScroll) window.scrollTo(0, 0);
   return render();
 }
@@ -34,12 +49,13 @@ export function navigate(to, { replace = false, keepScroll = false } = {}) {
 export const reload = () => render();
 
 export function startRouter() {
-  window.addEventListener('popstate', render);
+  window.addEventListener('popstate', e => { if (MEM) memPath = e.state?.p || '/'; render(); });
+  if (MEM) try { history.replaceState({ p: memPath }, ''); } catch { }
   document.addEventListener('click', e => {
     const a = e.target.closest('a[href]');
     if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || a.target === '_blank') return;
-    const url = new URL(a.href, location.href);
-    if (url.origin !== location.origin || url.pathname.startsWith('/api/')) return;
+    const url = new URL(a.getAttribute('href'), 'http://local'); // only path + query matter here
+    if (!a.getAttribute('href').startsWith('/') || url.pathname.startsWith('/api/')) return;
     e.preventDefault();
     navigate(url.pathname + url.search, { keepScroll: a.hasAttribute('data-keep') });
   });

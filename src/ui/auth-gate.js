@@ -1,5 +1,5 @@
 import { me } from '../lib/store.js';
-import { navigate } from '../lib/router.js';
+import { navigate, here } from '../lib/router.js';
 import { toast } from '../lib/util.js';
 import { closeAll } from './modal.js';
 
@@ -8,6 +8,6 @@ export function requireAuth() {
   if (me.user) return true;
   closeAll();
   toast('سجّل دخولك أول');
-  navigate('/login?next=' + encodeURIComponent(location.pathname + location.search));
+  navigate('/login?next=' + encodeURIComponent(here().path + here().search));
   return false;
 }

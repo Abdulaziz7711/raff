@@ -4,7 +4,7 @@ import { KINDS, badge, label } from '../lib/kinds.js';
 import { sb, q } from '../lib/supabase.js';
 import { me, onMe, setProfile } from '../lib/store.js';
 import * as db from '../lib/db.js';
-import { navigate, reload } from '../lib/router.js';
+import { navigate, reload, here } from '../lib/router.js';
 import { card, cover, grid, sh, reviewList, listCard, userRow, followBtn, av, uname, footer, loading } from '../ui/components.js';
 import { openModal } from '../ui/modal.js';
 import { openSearch } from '../ui/searchModal.js';
@@ -34,7 +34,7 @@ async function load(name) {
 export const invalidateProfile = () => { cache = null; };
 
 let libFilter = 'done', libQ = '';
-const getKind = () => { const k = new URLSearchParams(location.search).get('k'); if (KINDS[k]) return k; try { return localStorage.getItem('shelf-kind') || 'games'; } catch { return 'games'; } };
+const getKind = () => { const k = new URLSearchParams(here().search).get('k'); if (KINDS[k]) return k; try { return localStorage.getItem('shelf-kind') || 'games'; } catch { return 'games'; } };
 
 export async function profilePage({ name, view = 'profile' }, ctx) {
   if (!VIEWS.includes(view)) view = 'profile';
@@ -112,7 +112,7 @@ export async function profilePage({ name, view = 'profile' }, ctx) {
     </section></main>`;
   }
   function vFriends() {
-    const tab = new URLSearchParams(location.search).get('tab') === 'followers' ? 'followers' : 'following';
+    const tab = new URLSearchParams(here().search).get('tab') === 'followers' ? 'followers' : 'following';
     return `<main class="full"><section>
       <div class="toolbar"><h2>الأصدقاء</h2>${own ? '<a class="btn primary" href="/members" data-link>+ دوّر أعضاء</a>' : ''}</div>
       <div class="chips"><a class="chip" href="${href('friends', '&tab=following')}" data-link data-keep aria-pressed="${tab === 'following'}">${own ? 'أتابعهم' : 'يتابعهم'} · ${stats.following || 0}</a>
@@ -120,7 +120,7 @@ export async function profilePage({ name, view = 'profile' }, ctx) {
       <div id="ppl">${loading()}</div></section></main>`;
   }
   function vLikes() {
-    const tab = new URLSearchParams(location.search).get('tab') === 'given' ? 'given' : 'received';
+    const tab = new URLSearchParams(here().search).get('tab') === 'given' ? 'given' : 'received';
     return `<main class="full"><section>
       <div class="toolbar"><h2>اللايكات</h2></div>
       <div class="big-n"><div><b>${stats.likes_received || 0}</b><span>لايك ${own ? 'جاني' : 'جاه'} على المراجعات</span></div><div><b id="givenN">…</b><span>لايك ${own ? 'عطيته' : 'عطاه'}</span></div></div>
@@ -169,13 +169,13 @@ export async function profilePage({ name, view = 'profile' }, ctx) {
 
   /* ---------- async parts ---------- */
   if (view === 'friends') {
-    const tab = new URLSearchParams(location.search).get('tab') === 'followers' ? 'followers' : 'following';
+    const tab = new URLSearchParams(here().search).get('tab') === 'followers' ? 'followers' : 'following';
     const list = await (tab === 'followers' ? db.followers(p.id) : db.followingOf(p.id));
     if (!ctx.alive()) return;
     $('ppl').innerHTML = list.length ? `<div class="ulist">${list.map(x => userRow(x.user, esc(x.user.bio || ''))).join('')}</div>` : `<div class="empty">${tab === 'followers' ? 'ما أحد يتابع للحين.' : 'ما يتابع أحد للحين.'}</div>`;
   }
   if (view === 'likes') {
-    const tab = new URLSearchParams(location.search).get('tab') === 'given' ? 'given' : 'received';
+    const tab = new URLSearchParams(here().search).get('tab') === 'given' ? 'given' : 'received';
     q(sb.from('review_likes').select('user_id', { count: 'exact', head: true }).eq('user_id', p.id)).then(n => { if ($('givenN')) $('givenN').textContent = n; });
     if (tab === 'received') {
       const list = await db.likesReceived(p.id);

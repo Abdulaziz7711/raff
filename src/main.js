@@ -3,7 +3,7 @@ import './app.css';
 import { $, esc, debounce, toast } from './lib/util.js';
 import { sb, configured, q } from './lib/supabase.js';
 import { me, loadMe, onMe, toggleFollow, toggleLike } from './lib/store.js';
-import { route, startRouter, navigate, render } from './lib/router.js';
+import { route, startRouter, navigate, render, here } from './lib/router.js';
 import { search } from './lib/catalog.js';
 import { U } from './lib/db.js';
 import { svg, av, cover } from './ui/components.js';
@@ -63,7 +63,7 @@ function topbar() {
   bnav();
 }
 function bnav() {
-  const p = me.profile, path = location.pathname;
+  const p = me.profile, path = here().path;
   const cur = h => (h === '/' ? path === '/' : path.startsWith(h)) ? 'aria-current="page"' : '';
   $('bnav').innerHTML = `
     <a href="/" data-link ${cur('/')}>${svg('home')}الرئيسية</a>
@@ -174,7 +174,7 @@ async function boot() {
       invalidateProfile();
       if (event === 'SIGNED_IN') {
         const next = sessionStorage.getItem('raff-next'); sessionStorage.removeItem('raff-next');
-        if (next || ['/login', '/signup'].includes(location.pathname)) navigate(next || '/'); else render();
+        if (next || ['/login', '/signup'].includes(here().path)) navigate(next || '/'); else render();
       } else render();
       refreshUnread();
     }, 0);
