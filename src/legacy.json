@@ -1,0 +1,172 @@
+{
+ "profile": {
+  "name": "Abdulaziz771",
+  "bio": "",
+  "banner": ""
+ },
+ "items": [
+  {
+   "id": "g1",
+   "kind": "games",
+   "title": "Castlevania: Aria of Sorrow",
+   "status": "done",
+   "rating": 5,
+   "fav": true,
+   "date": "2025-06-14"
+  },
+  {
+   "id": "g2",
+   "kind": "games",
+   "title": "Ace Attorney: Trials and Tribulations",
+   "status": "done",
+   "rating": 5,
+   "fav": true,
+   "date": "2025-11-02"
+  },
+  {
+   "id": "g3",
+   "kind": "games",
+   "title": "Persona 5 Royal",
+   "status": "done",
+   "rating": 5,
+   "fav": true,
+   "date": "2026-03-20"
+  },
+  {
+   "id": "g4",
+   "kind": "games",
+   "title": "Gears of War: E-Day",
+   "status": "done",
+   "rating": 5,
+   "date": "2026-10-08"
+  },
+  {
+   "id": "g5",
+   "kind": "games",
+   "title": "Anger Foot",
+   "status": "done",
+   "rating": 2.5,
+   "date": "2026-09-30"
+  },
+  {
+   "id": "g6",
+   "kind": "games",
+   "title": "Operation: Tango",
+   "status": "done",
+   "rating": 3,
+   "date": "2026-09-26"
+  },
+  {
+   "id": "g7",
+   "kind": "games",
+   "title": "Elden Ring",
+   "status": "paused",
+   "rating": 0,
+   "date": "2026-07-10",
+   "ex": true
+  },
+  {
+   "id": "g8",
+   "kind": "games",
+   "title": "Hollow Knight: Silksong",
+   "status": "wish",
+   "rating": 0,
+   "date": "",
+   "ex": true
+  },
+  {
+   "id": "m1",
+   "kind": "movies",
+   "title": "Dune: Part Two",
+   "status": "done",
+   "rating": 4.5,
+   "fav": true,
+   "date": "2026-05-02",
+   "ex": true,
+   "review": "مثال مراجعة: الصوت والتصوير على مستوى ثاني."
+  },
+  {
+   "id": "m2",
+   "kind": "movies",
+   "title": "Oppenheimer",
+   "status": "done",
+   "rating": 4,
+   "date": "2025-08-12",
+   "ex": true
+  },
+  {
+   "id": "m3",
+   "kind": "movies",
+   "title": "Interstellar",
+   "status": "paused",
+   "rating": 0,
+   "date": "2026-09-01",
+   "ex": true
+  },
+  {
+   "id": "m4",
+   "kind": "movies",
+   "title": "Perfect Days",
+   "status": "wish",
+   "rating": 0,
+   "date": "",
+   "ex": true
+  },
+  {
+   "id": "s1",
+   "kind": "shows",
+   "sub": "أنمي",
+   "title": "Frieren",
+   "status": "done",
+   "rating": 5,
+   "fav": true,
+   "date": "2026-04-18",
+   "ex": true
+  },
+  {
+   "id": "s2",
+   "kind": "shows",
+   "sub": "مسلسل",
+   "title": "Severance",
+   "status": "playing",
+   "rating": 0,
+   "date": "2026-10-10",
+   "ex": true
+  },
+  {
+   "id": "s3",
+   "kind": "shows",
+   "sub": "أنمي",
+   "title": "Chainsaw Man",
+   "status": "paused",
+   "rating": 0,
+   "date": "2026-02-05",
+   "ex": true
+  },
+  {
+   "id": "s4",
+   "kind": "shows",
+   "sub": "مسلسل",
+   "title": "Dark",
+   "status": "wish",
+   "rating": 0,
+   "date": "",
+   "ex": true
+  }
+ ],
+ "lists": [
+  {
+   "id": "l1",
+   "kind": "games",
+   "title": "أفضل ألعاب 2026",
+   "desc": "مثال قائمة: رتّبها أو احذفها.",
+   "items": [
+    "g4",
+    "g3",
+    "g6",
+    "g5"
+   ]
+  }
+ ],
+ "friends": []
+}
