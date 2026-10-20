@@ -16,7 +16,7 @@ create table public.profiles (
 
 -- ============ catalog cache (written only by the server with the service key) ============
 create table public.titles (
-  id text primary key check (id ~ '^[gms][0-9]+$'),   -- g = RAWG game, m = TMDB movie, s = TMDB tv
+  id text primary key check (id ~ '^[gims][0-9]+$'),   -- i = IGDB game, g = RAWG game, m = TMDB movie, s = TMDB tv
   kind text not null check (kind in ('games','movies','shows')),
   title text not null,
   original_title text,

@@ -1,12 +1,24 @@
 # تشغيل «رفّ» على الإنترنت — خطوة بخطوة
 
-تحتاج 4 حسابات مجانية: **RAWG** و**TMDB** و**Supabase** و**Vercel**. الوقت المتوقع: 20–30 دقيقة.
+تحتاج حسابات مجانية: **IGDB عن طريق Twitch** (أو **RAWG**) للألعاب، و**TMDB** للأفلام والمسلسلات، و**Supabase** و**Vercel**. الوقت المتوقع: 20–30 دقيقة.
 
 > لا تحط أي مفتاح داخل الكود أو في GitHub. كلها تنحط في إعدادات Vercel (الخطوة 4).
 
 ---
 
-## 1) مفتاح RAWG (للألعاب)
+## 1) مفاتيح الألعاب — IGDB (موصى فيه) أو RAWG
+
+### IGDB — نفس قاعدة البيانات اللي يستخدمها Backloggd (أغلفة الألعاب الطولية ونبذتها)
+1. سوّ حساب Twitch في <https://www.twitch.tv/signup> وفعّل **التحقق بخطوتين** (Two-Factor) من إعدادات الأمان — Twitch يطلبه.
+2. افتح <https://dev.twitch.tv/console/apps> ← **Register Your Application**:
+   - Name: `raff` (أي اسم)
+   - OAuth Redirect URLs: `http://localhost`
+   - Category: **Website Integration**، و Client Type: **Confidential**
+3. افتح التطبيق: انسخ **Client ID** → `IGDB_CLIENT_ID`، واضغط **New Secret** وانسخه → `IGDB_CLIENT_SECRET`.
+
+إذا حطيت مفاتيح IGDB، الألعاب تجي منه. إذا ما حطيتها، تجي من RAWG (تحت).
+
+### RAWG (بديل)
 1. افتح <https://rawg.io/apidocs> واضغط **Get API Key**.
 2. سوّ حساب (أو سجّل دخول)، وعبّي النموذج القصير (اسم الموقع: رفّ، الرابط: تقدر تحط رابط GitHub الحين وتغيّره بعدين).
 3. انسخ الـ **API Key** واحفظه عندك → هذا `RAWG_API_KEY`.
@@ -32,14 +44,16 @@
 ## 4) Vercel (النشر والرابط)
 1. افتح <https://vercel.com> وسجّل بحساب GitHub.
 2. **Add New → Project** واختر المستودع `raff` واضغط **Import**.
-3. قبل ما تضغط Deploy، افتح **Environment Variables** وأضف هذي الستة:
+3. قبل ما تضغط Deploy، افتح **Environment Variables** وأضف هذي:
 
    | الاسم | القيمة |
    |---|---|
    | `VITE_SUPABASE_URL` | من Supabase |
    | `VITE_SUPABASE_ANON_KEY` | من Supabase |
    | `SUPABASE_SERVICE_ROLE_KEY` | من Supabase (سرّي) |
-   | `RAWG_API_KEY` | من RAWG |
+   | `IGDB_CLIENT_ID` | من Twitch (للألعاب) |
+   | `IGDB_CLIENT_SECRET` | من Twitch (للألعاب) |
+   | `RAWG_API_KEY` | من RAWG (اختياري إذا عندك IGDB) |
    | `TMDB_TOKEN` | من TMDB |
    | `VITE_ENABLE_GOOGLE` | `false` (غيّرها لـ `true` إذا فعّلت Google تحت) |
 
@@ -65,7 +79,8 @@
 ## ملاحظات
 - **إيميلات التأكيد**: خدمة الإيميل المجانية في Supabase محدودة (كم رسالة بالساعة). إذا كثروا المستخدمين، اربط SMTP خاص من **Authentication → Emails → SMTP Settings** (مثل Resend أو Brevo المجانية)، أو وقّف تأكيد الإيميل من **Authentication → Providers → Email → Confirm email**.
 - **الحدود المجانية**: Supabase المجاني يوقّف المشروع إذا ما أحد فتحه أسبوع كامل (ترجّعه بضغطة من لوحة التحكم). Vercel المجاني يكفي لموقع شخصي.
-- **المصادر**: RAWG وTMDB يشترطون ذكرهم؛ الموقع يذكرهم في أسفل كل صفحة.
+- **المصادر**: IGDB وRAWG وTMDB يشترطون ذكرهم؛ الموقع يذكرهم بسطر صغير أسفل الصفحة وفي «الإعدادات ← عن رفّ».
+- **Backloggd وLetterboxd وSerializd** ما عندهم API عام، فما ينربط عليهم مباشرة. لكن Backloggd ياخذ بياناته من IGDB، وLetterboxd وSerializd ياخذون من TMDB — نفس المصادر اللي يستخدمها رفّ.
 
 ## التشغيل على جهازك (للمطورين)
 ```bash

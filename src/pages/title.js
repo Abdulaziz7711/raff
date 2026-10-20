@@ -18,7 +18,7 @@ const SICONS = { done: badge('done'), played: badge('played'), dropped: badge('d
 
 export async function titlePage({ id }, ctx) {
   const kind = kindOf(id);
-  if (!kind || !/^[gms]\d+$/.test(id)) { $('view').innerHTML = '<div class="wrap page"><div class="empty">الرابط غلط.</div></div>'; return; }
+  if (!kind || !/^[gims]\d+$/.test(id)) { $('view').innerHTML = '<div class="wrap page"><div class="empty">الرابط غلط.</div></div>'; return; }
   document.getElementById('app').dataset.kind = kind;
   $('view').innerHTML = `<div class="tback"></div><div class="wrap">${loading()}</div>`;
   let d;
@@ -38,7 +38,8 @@ export async function titlePage({ id }, ctx) {
     x.runtime && ['المدة', `${x.runtime} دقيقة`],
     x.seasons && ['المواسم', `${x.seasons}${x.episodes ? ` · ${x.episodes} حلقة` : ''}`],
     x.playtime && ['متوسط اللعب', `${x.playtime} ساعة`],
-    x.metacritic && ['Metacritic', x.metacritic]
+    x.metacritic && ['Metacritic', x.metacritic],
+    x.score && ['تقييم النقاد', `${x.score}/100`]
   ].filter(Boolean);
 
   $('view').innerHTML = `
@@ -66,7 +67,7 @@ export async function titlePage({ id }, ctx) {
         </main>
         <aside>
           <section>${sh('تقييم الأعضاء')}<div id="stats">${loading()}</div></section>
-          <section><p class="attr">المصدر: <a href="${esc(x.source)}" target="_blank" rel="noopener">${kind === 'games' ? 'RAWG' : 'TMDB'}</a>${x.website ? ` · <a href="${esc(x.website)}" target="_blank" rel="noopener">الموقع الرسمي</a>` : ''}</p></section>
+          ${x.website ? `<section><p class="attr"><a href="${esc(x.website)}" target="_blank" rel="noopener">الموقع الرسمي ↗</a></p></section>` : ''}
         </aside>
       </div>
     </div>${footer()}`;

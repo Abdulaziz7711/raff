@@ -1,0 +1,52 @@
+/* Light / dark themes. Dark is the original look; light swaps the tokens.
+   The root gets data-theme="light" | "dark" from the toggle, or nothing for "follow the device". */
+:root{
+  --on-accent:#111; --text2:#c7cfd8; --danger:#ff6b6b; --danger-soft:#ff8f8f; --good:#5fd68a; --warn:#ffb35c;
+  --bar:rgba(20,24,29,.82); --bar-solid:rgba(20,24,29,.94); --scrim:rgba(5,7,10,.72); --hover-scrim:rgba(10,12,16,.68);
+  --shadow:rgba(0,0,0,.45); --edge:rgba(255,255,255,.06); --fade:rgba(20,24,29,.35); --ground2:#25303c;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f2f4f7; --panel:#ffffff; --raise:#e8ebf0; --line:#d9dee6;
+    --fg:#141a22; --mute:#566173; --dim:#7f8a9a;
+    --games:#6a59ee; --movies:#dd6416; --shows:#0d9b82; --star:#d99a00;
+    --on-accent:#fff; --text2:#323b47; --danger:#d93636; --danger-soft:#c43c3c; --good:#178a45; --warn:#b86200;
+    --bar:rgba(242,244,247,.86); --bar-solid:rgba(255,255,255,.96); --scrim:rgba(20,26,34,.45); --hover-scrim:rgba(10,12,16,.62);
+    --shadow:rgba(20,26,34,.16); --edge:rgba(0,0,0,.07); --fade:rgba(242,244,247,.3); --ground2:#dfe4ec;
+    color-scheme:light;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#f2f4f7; --panel:#ffffff; --raise:#e8ebf0; --line:#d9dee6;
+  --fg:#141a22; --mute:#566173; --dim:#7f8a9a;
+  --games:#6a59ee; --movies:#dd6416; --shows:#0d9b82; --star:#d99a00;
+  --on-accent:#fff; --text2:#323b47; --danger:#d93636; --danger-soft:#c43c3c; --good:#178a45; --warn:#b86200;
+  --bar:rgba(242,244,247,.86); --bar-solid:rgba(255,255,255,.96); --scrim:rgba(20,26,34,.45); --hover-scrim:rgba(10,12,16,.62);
+  --shadow:rgba(20,26,34,.16); --edge:rgba(0,0,0,.07); --fade:rgba(242,244,247,.3); --ground2:#dfe4ec;
+  color-scheme:light;
+}
+:root[data-theme="dark"]{color-scheme:dark}
+
+/* rules from original.css / app.css that used fixed colours */
+.topbar{background:var(--bar);border-bottom-color:var(--edge)}
+.backdrop{background:radial-gradient(120% 90% at 70% 10%,color-mix(in srgb,var(--accent) 45%,transparent),transparent 60%),linear-gradient(160deg,var(--ground2),var(--bg))}
+.backdrop::after,.tback::after{background:linear-gradient(to bottom,var(--fade) 0,transparent 30%,transparent 50%,var(--bg) 100%),linear-gradient(to right,var(--bg),transparent 18%,transparent 82%,var(--bg))}
+.tback{background:linear-gradient(160deg,var(--ground2),var(--bg))}
+.rev p,.rbody,.about{color:var(--text2)}
+.btn.primary,.fab,.rank,.btn.follow{color:var(--on-accent)}
+.btn.follow[aria-pressed="true"]{color:var(--fg)}
+.fab svg,.logbtn svg,.bnav .plus svg{stroke:var(--on-accent)}
+.overlay{background:var(--scrim)}
+.cover>span:last-child{background:var(--hover-scrim)}
+.cover:not(.has-img)>span:last-child{background:none}
+.menu,.sugg,.toast,.fab{box-shadow:0 12px 30px var(--shadow)}
+.thead>.cover{box-shadow:0 10px 30px var(--shadow),inset 0 0 0 1px rgba(255,255,255,.12)}
+@media (max-width:760px){.bnav{background:var(--bar-solid)}}
+.danger,.xbtn:hover{color:var(--danger)}
+.err{color:var(--danger-soft)}
+.ok{color:var(--good)}
+.spoil-tag{color:var(--warn)}
+.avatar{box-shadow:0 0 0 4px var(--bg)}
+
+/* theme toggle */
+.ibtn.theme svg{width:19px;height:19px}

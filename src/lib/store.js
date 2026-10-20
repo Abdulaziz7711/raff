@@ -41,7 +41,7 @@ export function setProfile(p) { me.profile = { ...me.profile, ...p }; emit(); }
 /* ---- entries ---- */
 export async function saveEntry(titleId, fields) {
   await ensureTitle(titleId);
-  const row = { user_id: me.user.id, title_id: titleId, kind: { g: 'games', m: 'movies', s: 'shows' }[titleId[0]], ...fields };
+  const row = { user_id: me.user.id, title_id: titleId, kind: { i: 'games', g: 'games', m: 'movies', s: 'shows' }[titleId[0]], ...fields };
   const e = await q(sb.from('entries').upsert(row, { onConflict: 'user_id,title_id' }).select('id,title_id,kind,status,rating,date,review,spoiler,platform').single());
   me.entries.set(titleId, e);
   emit();

@@ -3,11 +3,12 @@ import { $, esc, qsGet } from '../lib/util.js';
 import { KINDS, KIND_NAME } from '../lib/kinds.js';
 import { discover, search } from '../lib/catalog.js';
 import { sb, q } from '../lib/supabase.js';
-import { U } from '../lib/db.js';
+import { U, friendsTrending, raffTrending } from '../lib/db.js';
+import { me } from '../lib/store.js';
 import { card, grid, userRow, loading, footer } from '../ui/components.js';
 import { navigate } from '../lib/router.js';
 
-const FEEDS = { trending: 'الرائج', popular: 'الأشهر', top: 'الأعلى تقييماً', upcoming: 'قريباً' };
+const FEEDS = { trending: 'الرائج', friends: 'عند أصدقائك', raff: 'رائج في رفّ', popular: 'الأشهر', top: 'الأعلى تقييماً', upcoming: 'قريباً' };
 
 export async function explorePage({ kind = 'games' }, ctx) {
   if (!KINDS[kind]) kind = 'games';
@@ -26,6 +27,14 @@ export async function explorePage({ kind = 'games' }, ctx) {
   async function more() {
     $('more').disabled = true;
     try {
+      // friends / raff come from our own database; the rest from RAWG / TMDB
+      if (feed === 'friends' || feed === 'raff') {
+        const rows = feed === 'friends' ? await friendsTrending(kind, [...me.following], 30, 60) : await raffTrending(kind, 60);
+        if (!ctx.alive()) return;
+        const empty = feed === 'friends' ? (me.user ? (me.following.size ? `ما سجّل أصدقاؤك ${KINDS[kind].name} هالشهر.` : 'تابع ناس من الأعضاء ويطلع هنا وش يسوون.') : 'سجّل دخولك عشان تشوف وش رائج عند أصدقائك.') : 'ما سجّل أحد شي هالشهر للحين.';
+        $('grid').innerHTML = grid(rows.map(({ t, n }) => card(t, { caption: true, note: feed === 'friends' ? `${n} من أصدقائك` : `${n} عضو` })), empty);
+        $('more').hidden = true; $('more').disabled = false; return;
+      }
       const list = await discover(kind, feed, page);
       if (!ctx.alive()) return;
       const seen = new Set(all.map(t => t.id));

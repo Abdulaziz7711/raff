@@ -3,20 +3,32 @@ import { KINDS } from '../lib/kinds.js';
 import { discover } from '../lib/catalog.js';
 import { sb, q } from '../lib/supabase.js';
 import { me } from '../lib/store.js';
-import { activity, recentReviews, T } from '../lib/db.js';
+import { activity, recentReviews, friendsTrending, T } from '../lib/db.js';
 import { card, row, sh, skelRow, feedItem, reviewList, loading, footer } from '../ui/components.js';
 
 const KINDS3 = ['games', 'movies', 'shows'];
 
+// per kind: what RAWG/TMDB say is trending, and (signed in) what the people I follow are logging
 async function trendingRows(ctx) {
+  const ids = [...me.following];
   for (const k of KINDS3) {
     discover(k, 'trending').then(list => {
       if (!ctx.alive()) return;
       const el = $('tr-' + k); if (el) el.innerHTML = row(list.slice(0, 16).map(t => card(t, { caption: true })), 'ما فيه شي');
     }).catch(() => { const el = $('tr-' + k); if (el) el.innerHTML = '<div class="empty">ما قدرنا نجيب الرائج الحين.</div>'; });
+    if (!me.user) continue;
+    friendsTrending(k, ids).then(list => {
+      if (!ctx.alive()) return;
+      const el = $('fr-' + k); if (!el) return;
+      el.innerHTML = row(list.map(({ t, n }) => card(t, { caption: true, note: `${n} من أصدقائك` })),
+        ids.length ? `ما سجّل أصدقاؤك ${KINDS[k].name} هالشهر.` : 'تابع ناس من <a href="/members" data-link style="color:var(--accent)">الأعضاء</a> ويطلع هنا وش يسوون.');
+    }).catch(() => { const el = $('fr-' + k); if (el) el.innerHTML = ''; });
   }
 }
-const trendingHtml = () => KINDS3.map(k => `<section data-kind-sec="${k}">${sh(`رائج في ${KINDS[k].name}`, `<a href="/explore/${k}" data-link>الكل ‹</a>`)}<div id="tr-${k}">${skelRow()}</div></section>`).join('');
+const trendingHtml = () => KINDS3.map(k => `<section data-kind-sec="${k}" style="display:grid;gap:18px">
+    <div>${sh(`رائج في ${KINDS[k].name}`, `<a href="/explore/${k}" data-link>الكل ‹</a>`)}<div id="tr-${k}">${skelRow()}</div></div>
+    ${me.user ? `<div>${sh(`رائج عند أصدقائك · ${KINDS[k].name}`, `<a href="/explore/${k}?feed=friends" data-link>الكل ‹</a>`)}<div id="fr-${k}">${skelRow(6)}</div></div>` : ''}
+  </section>`).join('');
 
 export async function homePage(_, ctx) {
   document.getElementById('app').dataset.kind = 'games';
@@ -64,7 +76,7 @@ function landing(ctx) {
       <div class="hero-act"><a class="btn primary" href="/signup" data-link>سوّ حسابك مجاناً</a><a class="btn" href="/login" data-link>عندي حساب</a></div>
     </section>
     <div class="feats">
-      <div class="feat"><b>🎮 🎬 📺 كل شي في مكان واحد</b><span>ألعاب من RAWG، وأفلام ومسلسلات وأنمي من TMDB، مع البوسترات الحقيقية.</span></div>
+      <div class="feat"><b>🎮 🎬 📺 كل شي في مكان واحد</b><span>ألعابك وأفلامك ومسلسلاتك والأنمي في رفّ واحد، ببوستراتها ومعلوماتها.</span></div>
       <div class="feat"><b>⭐ قيّم وراجع</b><span>تقييم من نص نجمة لخمس، ومراجعات يقدر الكل يقراها ويعطيها لايك.</span></div>
       <div class="feat"><b>👑 مفضلاتك وقوائمك</b><span>أفضل خمسة لكل نوع، وتاج لأحسنها، وقوائم مرتّبة تشاركها.</span></div>
       <div class="feat"><b>👥 تابع أصدقاءك</b><span>صفحة عامة لكل عضو، وشوف نشاط اللي تتابعهم أول بأول.</span></div>

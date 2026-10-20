@@ -7,6 +7,7 @@ import { armed } from '../ui/modal.js';
 import { requireAuth } from '../ui/auth-gate.js';
 import { invalidateProfile } from './profile.js';
 import legacy from '../legacy.json';
+import { THEMES, THEME_NAME, getTheme, setTheme } from '../lib/theme.js';
 
 export function settingsPage() {
   if (!requireAuth()) return;
@@ -14,6 +15,7 @@ export function settingsPage() {
   document.title = 'الإعدادات — رفّ';
   const p = me.profile;
   $('view').innerHTML = `<div class="wrap page"><h1 class="ptitle">الإعدادات</h1><div class="settings">
+    <div class="card-box"><h2>المظهر</h2><div class="chips" id="sTheme" style="margin:0">${THEMES.map(t => `<button class="chip" type="button" data-t="${t}" aria-pressed="${getTheme() === t}">${THEME_NAME[t]}</button>`).join('')}</div></div>
     <form class="card-box" id="sUser"><h2>اسم المستخدم</h2>
       <label class="f">رابط صفحتك العامة<span class="pre"><span>${esc(location.host)}/u/</span><input name="username" value="${esc(p.username)}" required pattern="[A-Za-z0-9_]{3,20}" maxlength="20"></span></label>
       <p class="hint">إذا غيّرته، الرابط القديم يوقف يشتغل.</p>
@@ -29,6 +31,7 @@ export function settingsPage() {
     <div class="card-box"><h2>الحساب</h2>
       <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" type="button" id="sOut">تسجيل خروج</button><button class="btn danger" type="button" id="sDel">حذف الحساب نهائياً</button></div>
       <p class="hint">حذف الحساب يمسح ملفك ومكتبتك ومراجعاتك وقوائمك ولايكاتك، وما يرجع.</p></div>
+    <div class="card-box"><h2>عن رفّ</h2><p class="hint">بيانات الألعاب وصورها من <a href="https://www.igdb.com" target="_blank" rel="noopener">IGDB</a> أو <a href="https://rawg.io" target="_blank" rel="noopener">RAWG</a>، وبيانات الأفلام والمسلسلات والأنمي من <a href="https://www.themoviedb.org" target="_blank" rel="noopener">TMDB</a>. This product uses the TMDB API but is not endorsed or certified by TMDB.</p></div>
   </div></div>`;
   const msg = (f, t, ok = true) => { const s = f.querySelector('[data-msg]'); s.className = ok ? 'ok' : 'err'; s.textContent = t; };
 
@@ -53,6 +56,7 @@ export function settingsPage() {
     const { error } = await sb.auth.updateUser({ password: f.password.value });
     error ? msg(f, 'ما تغيّرت: ' + error.message, false) : (f.reset(), msg(f, 'تغيّرت ✓'));
   };
+  $('sTheme').onclick = e => { const b = e.target.closest('[data-t]'); if (!b) return; setTheme(b.dataset.t); $('sTheme').querySelectorAll('[data-t]').forEach(x => x.setAttribute('aria-pressed', x === b)); };
   $('sOut').onclick = async () => { await sb.auth.signOut(); navigate('/'); };
   $('sDel').onclick = async e => {
     if (!armed(e.currentTarget, 'متأكد؟ كل شي بينمسح. اضغط مرة ثانية')) return;

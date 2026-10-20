@@ -1,5 +1,7 @@
 import './original.css';
 import './app.css';
+import './theme.css';
+import { applyTheme, getTheme, setTheme, nextTheme, THEME_NAME } from './lib/theme.js';
 import { $, esc, debounce, toast } from './lib/util.js';
 import { sb, configured, q } from './lib/supabase.js';
 import { me, loadMe, onMe, toggleFollow, toggleLike } from './lib/store.js';
@@ -38,6 +40,8 @@ route('/settings', settingsPage);
 route('/import', importPage);
 route('/.*', () => { $('view').innerHTML = '<div class="wrap page"><div class="empty">الصفحة مو موجودة. <a href="/" data-link style="color:var(--accent)">ارجع للرئيسية</a></div></div>'; });
 
+applyTheme();
+const THEME_ICON = { system: 'auto', light: 'sun', dark: 'moon' };
 const curKind = () => document.getElementById('app').dataset.kind || 'games';
 let unread = 0;
 
@@ -49,6 +53,7 @@ function topbar() {
     <nav class="tnav"><a href="/" data-link>الرئيسية</a><a href="/explore/games" data-link>استكشف</a><a href="/members" data-link>الأعضاء</a></nav>
     <form class="tsearch" id="tForm" role="search">${svg('search')}<input id="tQ" type="search" placeholder="ابحث عن لعبة، فيلم، مسلسل…" autocomplete="off" enterkeyhint="search" aria-label="بحث"><div class="sugg" id="sugg" hidden></div></form>
     <div class="tright">
+      <button class="ibtn theme" type="button" data-theme-toggle aria-label="المظهر: ${THEME_NAME[getTheme()]}" title="المظهر: ${THEME_NAME[getTheme()]} — اضغط للتغيير">${svg(THEME_ICON[getTheme()])}</button>
       ${p ? `<button class="btn primary sm logbtn" type="button" data-quicklog>${svg('plus')}سجّل</button>
         <a class="ibtn bell" href="/activity" data-link aria-label="التنبيهات">${svg('bell')}${unread ? `<span class="dot-badge">${unread > 99 ? '99+' : unread}</span>` : ''}</a>
         <div class="rel me-wrap"><button class="me-btn" type="button" id="meBtn" aria-haspopup="true" aria-label="حسابي">${av(p, 36)}</button>
@@ -121,6 +126,7 @@ document.addEventListener('click', async e => {
   const t = e.target;
   if (!t.closest('.me-wrap')) $('meMenu')?.setAttribute('hidden', '');
   if (!t.closest('#tForm')) $('sugg')?.setAttribute('hidden', '');
+  if (t.closest('[data-theme-toggle]')) { const n = nextTheme(); setTheme(n); toast('المظهر: ' + THEME_NAME[n]); return; }
   if (t.closest('[data-quicklog]')) { if (requireAuth()) openSearch({ kind: curKind() }); return; }
   if (t.closest('[data-signout]')) { await sb.auth.signOut(); navigate('/'); return; }
   const sp = t.closest('[data-spoil]'); if (sp) { sp.classList.add('show'); return; }
@@ -149,8 +155,9 @@ document.addEventListener('click', async e => {
 });
 
 async function refreshUnread() { unread = await unreadCount(); topbar(); }
+document.addEventListener('raff-theme', () => topbar());
 document.addEventListener('raff-unread', () => { unread = 0; topbar(); });
-document.addEventListener('route', () => { closeAll(); bnav(); });
+document.addEventListener('route', () => { closeAll(); $('meMenu')?.setAttribute('hidden', ''); bnav(); });
 onMe(() => topbar());
 
 /* ---------- boot ---------- */

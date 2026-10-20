@@ -282,3 +282,5 @@ footer.foot a{color:var(--mute);text-decoration:underline}
 .card{grid-template-columns:minmax(0,1fr)}
 .posters.fav{grid-template-columns:repeat(5,minmax(0,1fr))}
 @media (max-width:520px){.posters.fav .meta span:first-child{display:none}.posters.fav .meta{justify-content:center}.bd-btn{bottom:44px}}
+[data-kind-sec]{grid-template-columns:minmax(0,1fr)}
+[data-kind-sec]>div{min-width:0}

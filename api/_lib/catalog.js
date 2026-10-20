@@ -1,5 +1,6 @@
-// Catalog adapters: RAWG for games, TMDB for movies and shows.
-// Every title is normalised to one shape and gets an id like g3498 (RAWG), m603 (TMDB movie) or s1399 (TMDB tv).
+// Catalog adapters: IGDB (the database Backloggd uses) or RAWG for games, TMDB for movies and shows.
+// Every title is normalised to one shape and gets an id like i1942 (IGDB), g3498 (RAWG), m603 (TMDB movie) or s1399 (TMDB tv).
+// Games come from IGDB when IGDB_CLIENT_ID / IGDB_CLIENT_SECRET are set, otherwise from RAWG.
 
 const RAWG = 'https://api.rawg.io/api';
 const TMDB = 'https://api.themoviedb.org/3';
@@ -65,6 +66,75 @@ async function gameDetail(id) {
     extra: { metacritic: g.metacritic || null, website: g.website || null, playtime: g.playtime || null, source: `https://rawg.io/games/${g.slug || g.id}` },
     related: (series.results || []).map(gameCard)
   };
+}
+
+/* ---------------- IGDB (via a Twitch developer app) ---------------- */
+const IGDB = 'https://api.igdb.com/v4';
+const IGDB_GENRES = {
+  'Role-playing (RPG)': 'آر بي جي', Shooter: 'تصويب', Adventure: 'مغامرة', Platform: 'منصات', Puzzle: 'ألغاز', Racing: 'سباقات',
+  Sport: 'رياضة', Strategy: 'استراتيجية', Simulator: 'محاكاة', Fighting: 'قتال', Indie: 'مستقلة', Arcade: 'أركيد',
+  "Hack and slash/Beat 'em up": 'هاك آند سلاش', 'Real Time Strategy (RTS)': 'استراتيجية فورية', 'Turn-based strategy (TBS)': 'استراتيجية أدوار',
+  Tactical: 'تكتيكية', 'Visual Novel': 'رواية مرئية', 'Card & Board Game': 'بطاقات ولوحية', Music: 'موسيقى',
+  "Point-and-click": 'أشر واضغط', MOBA: 'موبا', 'Quiz/Trivia': 'أسئلة', Pinball: 'بينبول'
+};
+export const useIgdb = () => !!(process.env.IGDB_CLIENT_ID && process.env.IGDB_CLIENT_SECRET);
+let igdbToken = null; // { value, until } — reused while this server instance stays warm
+async function igdb(endpoint, body) {
+  const id = process.env.IGDB_CLIENT_ID, secret = process.env.IGDB_CLIENT_SECRET;
+  if (!id || !secret) throw new HttpError(500, 'IGDB_CLIENT_ID / IGDB_CLIENT_SECRET are not set');
+  if (!igdbToken || Date.now() > igdbToken.until) {
+    const r = await fetch(`https://id.twitch.tv/oauth2/token?client_id=${encodeURIComponent(id)}&client_secret=${encodeURIComponent(secret)}&grant_type=client_credentials`, { method: 'POST' });
+    if (!r.ok) throw new HttpError(502, `Twitch auth ${r.status}`);
+    const j = await r.json();
+    igdbToken = { value: j.access_token, until: Date.now() + (j.expires_in - 120) * 1000 };
+  }
+  const r = await fetch(`${IGDB}/${endpoint}`, { method: 'POST', headers: { 'client-id': id, authorization: 'Bearer ' + igdbToken.value, accept: 'application/json' }, body });
+  if (r.status === 401) igdbToken = null;
+  if (!r.ok) throw new HttpError(502, `IGDB ${r.status}`);
+  return r.json();
+}
+const igdbImg = (img, size) => (img?.image_id ? `https://images.igdb.com/igdb/image/upload/${size}/${img.image_id}.jpg` : null);
+const igdbYear = ts => (ts ? new Date(ts * 1000).getUTCFullYear() : null);
+const IGDB_CARD = 'fields name,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,platforms.abbreviation,platforms.name;';
+function igdbCard(g) {
+  return {
+    id: 'i' + g.id, kind: 'games', title: g.name, year: igdbYear(g.first_release_date),
+    poster: igdbImg(g.cover, 't_cover_big'), backdrop: igdbImg(g.artworks?.[0] || g.screenshots?.[0], 't_1080p'),
+    genres: (g.genres || []).map(x => IGDB_GENRES[x.name] || x.name).slice(0, 3),
+    platforms: (g.platforms || []).map(p => p.abbreviation || p.name).slice(0, 6)
+  };
+}
+const quote = s => '"' + String(s).replace(/["\\]/g, ' ') + '"';
+async function igdbSearch(q, page) {
+  const rows = await igdb('games', `search ${quote(q)}; ${IGDB_CARD} where version_parent = null; limit 20; offset ${(page - 1) * 20};`);
+  return rows.map(igdbCard);
+}
+async function igdbDetail(id) {
+  const [g] = await igdb('games', `fields name,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,platforms.name,summary,storyline,
+    involved_companies.company.name,involved_companies.developer,total_rating,total_rating_count,url,
+    similar_games.name,similar_games.first_release_date,similar_games.cover.image_id,similar_games.genres.name; where id = ${+id};`);
+  if (!g) throw new HttpError(404, 'not found');
+  const devs = (g.involved_companies || []).filter(c => c.developer).map(c => c.company?.name).filter(Boolean);
+  return {
+    title: {
+      ...igdbCard(g),
+      platforms: (g.platforms || []).map(p => p.name).slice(0, 10),
+      by: devs.slice(0, 2).join('، ') || null,
+      about: (g.summary || g.storyline || '').trim().slice(0, 1500) || null
+    },
+    extra: { metacritic: null, score: g.total_rating ? Math.round(g.total_rating) : null, website: null, source: g.url || 'https://www.igdb.com' },
+    related: (g.similar_games || []).slice(0, 12).map(igdbCard)
+  };
+}
+async function igdbDiscover(feed, page) {
+  const now = Math.floor(Date.now() / 1000), off = (page - 1) * 20;
+  const q = {
+    trending: `where first_release_date > ${now - 180 * 86400} & first_release_date < ${now} & cover != null; sort total_rating_count desc;`,
+    popular: 'where total_rating_count > 0 & cover != null; sort total_rating_count desc;',
+    top: 'where total_rating_count > 300 & cover != null; sort total_rating desc;',
+    upcoming: `where first_release_date > ${now} & cover != null; sort hypes desc;`
+  }[feed] || 'where cover != null; sort total_rating_count desc;';
+  return (await igdb('games', `${IGDB_CARD} ${q} limit 20; offset ${off};`)).map(igdbCard);
 }
 
 /* ---------------- TMDB ---------------- */
@@ -137,6 +207,7 @@ export const KINDS = ['games', 'movies', 'shows'];
 
 export async function search(kind, q, page = 1) {
   if (kind === 'games') {
+    if (useIgdb()) return igdbSearch(q, page);
     const r = await rawg('/games', { search: q, page_size: 20, page, search_precise: 'true' });
     return r.results.map(gameCard);
   }
@@ -149,14 +220,15 @@ export async function search(kind, q, page = 1) {
 }
 
 export async function detail(id) {
-  const m = /^([gms])(\d+)$/.exec(id || '');
+  const m = /^([gims])(\d+)$/.exec(id || '');
   if (!m) throw new HttpError(400, 'bad id');
-  return m[1] === 'g' ? gameDetail(m[2]) : m[1] === 'm' ? movieDetail(m[2]) : showDetail(m[2]);
+  return { i: igdbDetail, g: gameDetail, m: movieDetail, s: showDetail }[m[1]](m[2]);
 }
 
 const iso = d => d.toISOString().slice(0, 10);
 export async function discover(kind, feed = 'trending', page = 1) {
   if (kind === 'games') {
+    if (useIgdb()) return igdbDiscover(feed, page);
     const now = new Date(), past = new Date(now), future = new Date(now);
     past.setMonth(past.getMonth() - 6); future.setFullYear(future.getFullYear() + 1);
     const p = {

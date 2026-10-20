@@ -67,3 +67,20 @@ export async function addToList(listId, titleId) {
   await q(sb.from('lists').update({ updated_at: new Date().toISOString() }).eq('id', listId));
 }
 export const myLists = kind => q(sb.from('lists').select('id,title,kind, list_items(title_id)').eq('user_id', me.user.id).eq('kind', kind).order('updated_at', { ascending: false }));
+
+/* ---- what's trending among the people I follow, and across all members ---- */
+function tally(rows, key = 'title') {
+  const m = new Map();
+  for (const r of rows) { const t = r[key]; if (!t) continue; const x = m.get(t.id) || { t, n: 0 }; x.n++; m.set(t.id, x); }
+  return [...m.values()].sort((a, b) => b.n - a.n);
+}
+export async function friendsTrending(kind, userIds, days = 30, limit = 16) {
+  if (!userIds.length) return [];
+  const since = new Date(Date.now() - days * 864e5).toISOString();
+  const rows = await q(sb.from('entries').select(`title:titles(${T})`).eq('kind', kind).in('user_id', userIds).gte('updated_at', since).limit(1000));
+  return tally(rows).slice(0, limit);
+}
+export async function raffTrending(kind, limit = 16) {
+  const rows = await q(sb.from('popular_titles').select(T + ',recent_logs').eq('kind', kind).order('recent_logs', { ascending: false }).limit(limit));
+  return rows.map(t => ({ t, n: t.recent_logs }));
+}

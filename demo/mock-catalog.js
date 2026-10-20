@@ -34,5 +34,5 @@ export async function ensureTitle(id) {
   const t = byId.get(id);
   if (t) sb._putTitle(t);
 }
-export const kindOf = id => ({ g: 'games', m: 'movies', s: 'shows' }[String(id)[0]]);
+export const kindOf = id => ({ i: 'games', g: 'games', m: 'movies', s: 'shows' }[String(id)[0]]);
 export const titleById = id => byId.get(id);

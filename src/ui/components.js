@@ -15,7 +15,10 @@ export const ICON = {
   people: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c1-3.5 3.5-5 6.5-5s5.5 1.5 6.5 5"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.5 0 4 1.3 4.8 4"/>',
   bookmark: '<path d="M6 3h12v18l-6-4-6 4z"/>',
   play: '<path d="M8 5l11 7-11 7z"/>',
-  pause: '<path d="M9 5v14M15 5v14"/>'
+  pause: '<path d="M9 5v14M15 5v14"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>',
+  auto: '<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v17a8.5 8.5 0 0 0 0-17z" fill="currentColor"/>'
 };
 export const svg = (k, cls = '') => `<svg viewBox="0 0 24 24" aria-hidden="true" class="${cls}">${ICON[k]}</svg>`;
 
@@ -34,13 +37,13 @@ export function cover(t, { status, rank, crowned, tag, eager } = {}) {
 export const titleHref = t => `/t/${t.id}`;
 
 // poster card linking to the title page; `entry` (optional) shows that user's status/rating underneath
-export function card(t, { entry, rank, crowned, mine = true, caption = false } = {}) {
+export function card(t, { entry, rank, crowned, mine = true, caption = false, note } = {}) {
   let left = '', right = '';
   if (entry) {
     left = ['done', 'played', 'dropped'].includes(entry.status) && entry.date ? fmtDate(entry.date) : label(t.kind, entry.status, mine);
     right = stars(entry.rating);
   } else if (caption) {
-    left = t.year || '';
+    left = note ?? (t.year || '');
     const mineE = me.entries.get(t.id);
     right = mineE ? '<span class="have">عندك ✓</span>' : '';
   }
@@ -120,5 +123,6 @@ export function listCard(l, { showUser = false } = {}) {
 }
 
 export const loading = (t = 'يحمّل…') => `<div class="loading">${t}</div>`;
+// TMDB and RAWG terms ask for a credit and a link somewhere on the site; this one line is it
 export const footer = () => `<footer class="foot"><div class="wrap"><span>رفّ — رفّك لكل اللي لعبته وشفته</span>
-  <span>بيانات الألعاب من <a href="https://rawg.io" target="_blank" rel="noopener">RAWG</a> · بيانات الأفلام والمسلسلات من <a href="https://www.themoviedb.org" target="_blank" rel="noopener">TMDB</a> (هذا المنتج يستخدم TMDB API لكنه غير معتمد منها)</span></div></footer>`;
+  <span>البيانات: <a href="https://rawg.io" target="_blank" rel="noopener">RAWG</a> · <a href="https://www.themoviedb.org" target="_blank" rel="noopener">TMDB</a></span></div></footer>`;
