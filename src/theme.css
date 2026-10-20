@@ -38,7 +38,6 @@
 .fab svg,.logbtn svg,.bnav .plus svg{stroke:var(--on-accent)}
 .overlay{background:var(--scrim)}
 .cover>span:last-child{background:var(--hover-scrim)}
-.cover:not(.has-img)>span:last-child{background:none}
 .menu,.sugg,.toast,.fab{box-shadow:0 12px 30px var(--shadow)}
 .thead>.cover{box-shadow:0 10px 30px var(--shadow),inset 0 0 0 1px rgba(255,255,255,.12)}
 @media (max-width:760px){.bnav{background:var(--bar-solid)}}

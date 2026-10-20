@@ -32,7 +32,7 @@ export function cover(t, { status, rank, crowned, tag, eager } = {}) {
   return `<div class="cover${crowned ? ' crowned' : ''}${img ? ' has-img' : ''}" style="background-image:linear-gradient(160deg,hsl(${h} 55% 46%),hsl(${(h + 40) % 360} 55% 20%))">${img}
       <span class="pins">${badge(status)}${pinTag ? `<em class="tag">${esc(pinTag)}</em>` : ''}</span>
       ${rank ? `<em class="rank">${rank}</em>` : (crowned ? '<span class="crown" aria-label="تاج">👑</span>' : '')}
-      <span>${esc(t.title)}</span></div>`;
+      <span dir="auto">${esc(t.title)}</span></div>`;
 }
 export const titleHref = t => `/t/${t.id}`;
 
@@ -48,7 +48,7 @@ export function card(t, { entry, rank, crowned, mine = true, caption = false, no
     right = mineE ? '<span class="have">عندك ✓</span>' : '';
   }
   return `<a class="card" href="${titleHref(t)}" data-link>${cover(t, { status: entry?.status, rank, crowned })}
-    ${caption ? `<span class="cap">${esc(t.title)}</span>` : ''}
+    ${caption ? `<span class="cap" dir="auto" title="${esc(t.title)}">${esc(t.title)}</span>` : ''}
     ${left || right ? `<div class="meta"><span>${esc(left)}</span><span class="stars">${right}</span></div>` : ''}</a>`;
 }
 export const grid = (cards, empty, cls = '') => cards.length ? `<div class="posters ${cls}">${cards.join('')}</div>` : `<div class="empty">${empty}</div>`;

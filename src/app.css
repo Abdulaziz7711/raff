@@ -263,7 +263,6 @@ footer.foot a{color:var(--mute);text-decoration:underline}
 .modal .srow .cover,.sugg .srow .cover{font-size:0}
 .lsearch.inline{margin:0}
 .tabs{margin-bottom:0}
-.cover:not(.has-img)>span:last-child{opacity:1;background:none;place-items:end start;text-align:start;padding:8px}
 .rfoot svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round;vertical-align:-3px}
 .deck{grid-template-columns:repeat(7,1fr)}
 .tile{color:var(--mute)}
@@ -284,3 +283,5 @@ footer.foot a{color:var(--mute);text-decoration:underline}
 @media (max-width:520px){.posters.fav .meta span:first-child{display:none}.posters.fav .meta{justify-content:center}.bd-btn{bottom:44px}}
 [data-kind-sec]{grid-template-columns:minmax(0,1fr)}
 [data-kind-sec]>div{min-width:0}
+/* the name under a cover: full title on up to two lines, cut at the end in either language */
+.card .cap{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.35;text-align:start;unicode-bidi:plaintext}
