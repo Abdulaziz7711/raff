@@ -1,13 +1,13 @@
 {
-  "name": "ميزانيتي · My Budget",
-  "short_name": "ميزانيتي",
+  "name": "بوكي · Booki",
+  "short_name": "بوكي",
   "description": "Personal finance & budget planner (50/30/20 and more) in Arabic and English",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0f1720",
-  "theme_color": "#0e9f6e",
+  "background_color": "#2a2c31",
+  "theme_color": "#2a2c31",
   "dir": "auto",
   "lang": "ar",
   "icons": [
