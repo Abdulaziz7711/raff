@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>مُنمذِج · Modeler</title>
+<meta name="description" content="DCF and 3-statement financial models from your numbers, previewed in the browser and downloaded as Excel with live formulas.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700&family=Readex+Pro:wght@400;600&family=Noto+Naskh+Arabic:wght@400;700&family=Alexandria:wght@400;600;800&family=Cairo:wght@400;600;800&family=Noto+Kufi+Arabic:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#f4f5f7; --panel:#ffffff; --raise:#f8f9fb; --line:#e3e6eb; --line2:#d3d8df;
+  --fg:#15191f; --mute:#5f6b7a; --dim:#8a95a3;
+  --brand:#0f766e; --brand-fg:#ffffff; --brand-soft:#e6f4f2;
+  --warn:#b45309; --warn-soft:#fef3c7; --ok:#15803d; --ok-soft:#dcfce7; --bad:#b91c1c;
+  --in:#1d4ed8;
+  --f:"IBM Plex Sans Arabic",Tahoma,system-ui,sans-serif;
+  --r:12px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1216; --panel:#171b21; --raise:#1d2229; --line:#2a313a; --line2:#36404b;
+    --fg:#e7ebf0; --mute:#9aa6b4; --dim:#6c7886;
+    --brand:#2dd4bf; --brand-fg:#062925; --brand-soft:#123430;
+    --warn:#fbbf24; --warn-soft:#3a2c0b; --ok:#4ade80; --ok-soft:#10301c; --bad:#f87171; --in:#7aa7ff;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1216; --panel:#171b21; --raise:#1d2229; --line:#2a313a; --line2:#36404b;
+  --fg:#e7ebf0; --mute:#9aa6b4; --dim:#6c7886;
+  --brand:#2dd4bf; --brand-fg:#062925; --brand-soft:#123430;
+  --warn:#fbbf24; --warn-soft:#3a2c0b; --ok:#4ade80; --ok-soft:#10301c; --bad:#f87171; --in:#7aa7ff;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:15px/1.55 var(--f);-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+
+/* top bar */
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--panel) 92%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:14px;height:62px}
+.brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:17px;white-space:nowrap}
+.brand i{display:grid;place-items:center;width:30px;height:30px;border-radius:8px;background:var(--brand);color:var(--brand-fg);font-style:normal;font-size:15px}
+.brand small{font-weight:500;color:var(--mute);font-size:12px}
+nav.tabs{display:flex;gap:4px;margin-inline-start:auto;background:var(--raise);border:1px solid var(--line);padding:4px;border-radius:11px}
+nav.tabs button{border:0;background:none;padding:7px 14px;border-radius:8px;cursor:pointer;font-weight:600;color:var(--mute);white-space:nowrap}
+nav.tabs button[aria-selected="true"]{background:var(--panel);color:var(--fg);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.ghost{border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:6px 11px;cursor:pointer;font-weight:600;font-size:13px}
+.ghost:hover{border-color:var(--line2)}
+
+/* intro */
+.intro{padding:26px 0 8px}
+.intro h1{margin:0 0 4px;font-size:clamp(22px,4vw,30px);line-height:1.25}
+.intro p{margin:0;color:var(--mute);max-width:70ch}
+
+/* cards & fields */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin:14px 0}
+.card h2{margin:0 0 2px;font-size:16px;display:flex;align-items:center;gap:8px}
+.card h2 .n{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--brand-soft);color:var(--brand);font-size:12px}
+.card .lead{margin:0 0 14px;color:var(--mute);font-size:13px}
+.cols{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px 16px}
+.split{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+@media (max-width:860px){.split{grid-template-columns:minmax(0,1fr)}}
+.grp h3{margin:0 0 8px;font-size:13px;color:var(--brand);font-weight:700;letter-spacing:.2px}
+.f{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.f label{font-size:13px;font-weight:600}
+.f label .en{color:var(--dim);font-weight:500;font-size:11.5px;margin-inline-start:6px}
+.f .hint{font-size:11.5px;color:var(--dim);margin-top:-2px}
+.box{display:flex;align-items:center;border:1px solid var(--line2);border-radius:9px;background:var(--raise);overflow:hidden}
+.box:focus-within{border-color:var(--brand);box-shadow:0 0 0 3px color-mix(in srgb,var(--brand) 22%,transparent)}
+.box input,.box select{flex:1;min-width:0;width:100%;border:0;background:none;padding:8px 10px;outline:none;color:var(--in);font-weight:600}
+.box select{color:var(--fg);font-weight:500}
+.box input[type="text"].txt{color:var(--fg);font-weight:500}
+.box .u{padding:0 10px;color:var(--mute);font-size:12px;white-space:nowrap}
+.chk{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;padding:8px 0}
+.chk input{width:18px;height:18px;accent-color:var(--brand)}
+.status{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:9px;font-size:13px;font-weight:600;margin-top:6px;flex-wrap:wrap}
+.status.ok{background:var(--ok-soft);color:var(--ok)}
+.status.bad{background:var(--warn-soft);color:var(--warn)}
+.status .ghost{margin-inline-start:auto}
+.status b{font-variant-numeric:tabular-nums}
+
+/* assumptions grid */
+.gridwrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table.g{border-collapse:collapse;width:100%;min-width:640px;font-size:13px}
+table.g th,table.g td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:center;white-space:nowrap}
+table.g thead th{background:var(--raise);font-weight:700;color:var(--mute);font-size:12px}
+table.g th.lbl,table.g td.lbl{text-align:start;position:sticky;inset-inline-start:0;background:var(--panel);z-index:1;min-width:210px;white-space:normal}
+table.g thead th.lbl{background:var(--raise)}
+table.g td.lbl small{display:block;color:var(--dim);font-size:11px}
+table.g input{width:74px;border:1px solid var(--line2);background:var(--raise);border-radius:7px;padding:5px 6px;text-align:center;color:var(--in);font-weight:600;outline:none}
+table.g input:focus{border-color:var(--brand)}
+table.g .fill{border:0;background:none;cursor:pointer;color:var(--brand);font-size:12px;font-weight:700;padding:3px 6px;border-radius:6px}
+table.g .fill:hover{background:var(--brand-soft)}
+table.g tr:last-child td{border-bottom:0}
+
+/* actions */
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:18px 0 6px}
+.btn{border:0;border-radius:10px;padding:11px 18px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn.primary{background:var(--brand);color:var(--brand-fg)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.soft{background:var(--panel);border:1px solid var(--line2)}
+.btn:disabled{opacity:.5;cursor:default}
+.actions .sp{flex:1}
+.msg{font-size:13px;color:var(--warn);font-weight:600}
+
+/* ---------- themed output ---------- */
+#out{margin:22px 0 60px;scroll-margin-top:76px}
+.otool{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:12px}
+.otool .tname{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mute)}
+.otool .sw{display:inline-flex;gap:3px}
+.otool .sw i{width:14px;height:14px;border-radius:4px;display:block;border:1px solid rgba(0,0,0,.1)}
+.otool .tname b{color:var(--fg)}
+.otool .sp{flex:1}
+
+.doc{--p:#1f3864;--a:#c9a227;--band:#f3f6fb;--tot:#e3e9f3;--ink:#1b2433;--bg:#fff;--paper:#f7f4ec;--inF:#1f4fd8;--inB:#fff7dc;--wf:var(--f);
+  background:var(--paper);color:var(--ink);font-family:var(--wf);border-radius:16px;overflow:hidden;border:1px solid var(--line);
+  animation:rise .45s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.doc .dhead{padding:24px 24px 20px;position:relative}
+.doc .dhead .kicker{font-size:12px;letter-spacing:.6px;text-transform:uppercase;opacity:.75;font-weight:600}
+.doc .dhead h2{margin:4px 0 2px;font-size:clamp(22px,4vw,32px);line-height:1.2;font-weight:800}
+.doc .dhead p{margin:0;opacity:.75;font-size:13px}
+.doc[data-head="solid"] .dhead{background:var(--p);color:#fff}
+.doc[data-head="underline"] .dhead{border-bottom:3px solid var(--p)}
+.doc[data-head="underline"] .dhead h2{color:var(--p)}
+.doc[data-head="outline"] .dhead{background:var(--tot);border-bottom:1px solid var(--p)}
+.doc[data-head="outline"] .dhead h2{color:var(--p)}
+.doc[data-head="line"] .dhead h2{font-size:clamp(26px,5vw,40px);letter-spacing:-.5px}
+.doc[data-head="line"] .dhead::after{content:"";position:absolute;inset-inline-start:24px;bottom:0;width:72px;height:5px;background:var(--a)}
+
+/* KPI variants */
+.kpis{padding:18px 24px;display:grid;gap:12px}
+.kpi .kl{font-size:12px;opacity:.7;font-weight:600}
+.kpi .kv{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.25;direction:ltr;text-align:start;unicode-bidi:plaintext}
+.kpi .ks{font-size:12px;opacity:.8;margin-top:2px}
+.kpi .ks b{font-variant-numeric:tabular-nums}
+.kpi .up{color:#15803d}.kpi .down{color:#b91c1c}
+.doc[data-kpi="cards"] .kpis{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.doc[data-kpi="cards"] .kpi{background:var(--bg);border-radius:12px;padding:14px;border-top:4px solid var(--a);box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.doc[data-kpi="strip"] .kpis{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0;background:color-mix(in srgb,var(--p) 8%,var(--bg));margin:0;border-block:1px solid color-mix(in srgb,var(--p) 25%,transparent)}
+.doc[data-kpi="strip"] .kpi{padding:6px 16px;border-inline-start:1px solid color-mix(in srgb,var(--p) 25%,transparent)}
+.doc[data-kpi="strip"] .kpi:first-child{border-inline-start:0}
+.doc[data-kpi="strip"] .kv{color:var(--p)}
+.doc[data-kpi="big"] .kpis{grid-template-columns:minmax(0,1.4fr) repeat(auto-fit,minmax(140px,1fr))}
+.doc[data-kpi="big"] .kpi.hero{grid-row:span 2;background:var(--p);color:#fff;border-radius:14px;padding:18px;display:flex;flex-direction:column;justify-content:flex-end}
+.doc[data-kpi="big"] .kpi.hero .kv{font-size:clamp(30px,6vw,46px)}
+.doc[data-kpi="big"] .kpi:not(.hero){padding:10px 0;border-bottom:1px solid color-mix(in srgb,var(--ink) 15%,transparent)}
+@media (max-width:640px){.doc[data-kpi="big"] .kpis{grid-template-columns:1fr 1fr}.doc[data-kpi="big"] .kpi.hero{grid-column:1/-1;grid-row:auto}}
+.warn{margin:0 24px 12px;padding:10px 12px;border-radius:9px;background:#fef3c7;color:#92400e;font-size:13px;font-weight:600}
+
+/* sheet tabs */
+.stabs{display:flex;gap:4px;padding:0 24px;overflow-x:auto;border-bottom:1px solid color-mix(in srgb,var(--ink) 15%,transparent)}
+.stabs button{border:0;background:none;padding:10px 14px;cursor:pointer;font-weight:700;font-size:13px;color:inherit;opacity:.6;border-bottom:3px solid transparent;white-space:nowrap;font-family:inherit}
+.stabs button[aria-selected="true"]{opacity:1;border-bottom-color:var(--a);color:var(--p)}
+.doc.dark .stabs button[aria-selected="true"]{color:var(--a)}
+.sheetbox{padding:16px 24px 24px}
+.sheetwrap{overflow-x:auto;background:var(--bg);border-radius:10px;border:1px solid color-mix(in srgb,var(--ink) 12%,transparent)}
+table.mt{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums}
+table.mt td,table.mt th{padding:6px 12px;white-space:nowrap}
+table.mt td.l,table.mt th.l{text-align:start;position:sticky;inset-inline-start:0;background:var(--bg);min-width:250px;white-space:normal;z-index:1}
+table.mt td.v{text-align:end;direction:ltr;unicode-bidi:plaintext;min-width:92px}
+table.mt td.l.ind{padding-inline-start:26px}
+table.mt tr.bh th{text-align:center;font-weight:700;padding-top:10px;padding-bottom:8px}
+table.mt tr.bh th.l{text-align:start}
+.doc[data-head="solid"] tr.bh th{background:var(--p);color:#fff}
+.doc[data-head="underline"] tr.bh th{color:var(--p);border-bottom:2px solid var(--p);font-size:14px}
+.doc[data-head="outline"] tr.bh th{background:var(--tot);color:var(--p);border-block:1px solid var(--p)}
+.doc[data-head="line"] tr.bh th{color:var(--p);border-bottom:4px solid var(--a);font-size:14px}
+table.mt tr.sp td{height:14px;padding:0}
+.doc[data-band="1"] table.mt tr.r:nth-child(even of .r) td{background:var(--band)}
+table.mt td.in{color:var(--inF);background:var(--inB)!important;font-weight:600}
+table.mt tr.total td{font-weight:700;border-top:1px solid color-mix(in srgb,var(--ink) 35%,transparent)}
+table.mt tr.strong td{font-weight:700}
+table.mt tr.grand td{font-weight:800;background:var(--tot)!important;border-top:1px solid var(--p);border-bottom:3px double var(--p)}
+table.mt tr.sub td{font-style:italic;opacity:.7;font-size:12.5px}
+table.mt td.muted{font-style:italic;opacity:.6}
+table.mt tr.key td{background:var(--a)!important;color:#fff;font-weight:800;font-size:15px}
+table.mt tr.check td{color:#15803d;font-weight:600;font-size:12px}
+table.mt tr.check td.bad{color:#b91c1c}
+table.mt td.axis{background:var(--tot)!important;font-weight:700}
+table.mt td.base{background:var(--a)!important;color:#fff;font-weight:800}
+table.mt tr.axisrow td{font-weight:700}
+.doc.dark{border-color:#1f2937}
+.doc.dark table.mt tr.check td{color:#4ade80}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;opacity:.75;padding:12px 24px 0}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-inline-end:6px;vertical-align:-1px;background:var(--inB);border:1px solid var(--inF)}
+.legend span+span::before{background:var(--ink);border-color:var(--ink)}
+footer{color:var(--dim);font-size:12px;text-align:center;padding:30px 0 40px}
+@media (max-width:640px){
+  .top .wrap{height:auto;flex-wrap:wrap;padding-top:10px;padding-bottom:10px}
+  nav.tabs{order:3;width:100%;margin:0}
+  nav.tabs button{flex:1}
+  .brand small{display:none}
+  .card{padding:14px}
+  .doc .dhead,.kpis,.sheetbox{padding-inline:14px}
+  .stabs{padding:0 10px}
+}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <div class="brand"><i>∑</i><span data-t="brand"></span><small>DCF · 3-Statement</small></div>
+  <nav class="tabs" role="tablist">
+    <button role="tab" data-tab="dcf" aria-selected="true">DCF</button>
+    <button role="tab" data-tab="tsm" aria-selected="false" data-t="tab_tsm"></button>
+  </nav>
+  <button class="ghost" id="langBtn">EN</button>
+</div></header>
+
+<main class="wrap">
+  <section class="intro">
+    <h1 id="introTitle"></h1>
+    <p id="introText"></p>
+  </section>
+
+  <section class="card" id="setup">
+    <h2><span class="n">1</span><span data-t="sec_company"></span></h2>
+    <p class="lead" data-t="sec_company_lead"></p>
+    <div class="cols">
+      <div class="f"><label data-t="f_company"></label><div class="box"><input type="text" class="txt" id="c_company" autocomplete="off"></div></div>
+      <div class="f"><label data-t="f_currency"></label><div class="box"><select id="c_currency">
+        <option>SAR</option><option>USD</option><option>AED</option><option>KWD</option><option>QAR</option><option>BHD</option><option>OMR</option><option>EGP</option><option>EUR</option><option>GBP</option>
+      </select></div></div>
+      <div class="f"><label data-t="f_units"></label><div class="box"><select id="c_units">
+        <option value="k"></option><option value="m"></option><option value="b"></option><option value="u"></option>
+      </select></div></div>
+      <div class="f"><label data-t="f_base"></label><div class="box"><input type="text" inputmode="numeric" id="c_base" dir="ltr"></div><span class="hint" data-t="f_base_h"></span></div>
+      <div class="f"><label data-t="f_years"></label><div class="box"><select id="c_years">
+        <option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>10</option>
+      </select><span class="u" data-t="u_years"></span></div></div>
+    </div>
+  </section>
+
+  <div id="forms"></div>
+
+  <div class="actions">
+    <button class="btn soft" id="sampleBtn" data-t="btn_sample"></button>
+    <button class="btn soft" id="clearBtn" data-t="btn_clear"></button>
+    <span class="sp"></span>
+    <span class="msg" id="msg"></span>
+    <button class="btn primary" id="genBtn"><span>✦</span><span data-t="btn_gen"></span></button>
+  </div>
+
+  <section id="out" hidden></section>
+</main>
+<footer data-t="footer"></footer>
+
+<script src="vendor/exceljs.min.js"></script>
+<script src="engine.js"></script>
+<script>
+(() => {
+'use strict';
+const E = window.Engine, L = E.L;
+
+/* ---------------- UI strings ---------------- */
+const T = {
+  brand: ['مُنمذِج', 'Modeler'], tab_tsm: ['القوائم الثلاث', '3-Statement'],
+  intro_dcf: ['نموذج التدفقات النقدية المخصومة (DCF)', 'Discounted cash flow (DCF) model'],
+  intro_dcf_p: ['أدخل إيرادات سنة الأساس وافتراضاتك وتكلفة رأس المال، ويبني لك الموقع نموذج تقييم كامل: التدفق النقدي الحر، القيمة النهائية، قيمة المنشأة وقيمة السهم مع جدول حساسية. شاهده هنا ثم حمّله ملف Excel بمعادلات حيّة.',
+    'Enter base-year revenue, your assumptions and cost of capital. You get a full valuation: free cash flow, terminal value, enterprise and per-share value, and a sensitivity table. Preview it here, then download it as Excel with live formulas.'],
+  intro_tsm: ['نموذج القوائم المالية الثلاث المترابطة', 'Linked 3-statement financial model'],
+  intro_tsm_p: ['أدخل قائمة الدخل والميزانية لسنة الأساس (الإيرادات، المخزون، الذمم، القروض…) وافتراضات التوقع، ويبني لك قائمة دخل وميزانية وتدفقات نقدية مترابطة ومتوازنة لكل سنة.',
+    'Enter the base-year income statement and balance sheet (revenue, inventory, receivables, debt…) and your forecast assumptions. You get a linked, balancing income statement, balance sheet and cash flow for every year.'],
+  sec_company: ['بيانات الشركة', 'Company'], sec_company_lead: ['تُستخدم في عناوين النموذج وملف Excel.', 'Used in the model titles and the Excel file.'],
+  f_company: ['اسم الشركة', 'Company name'], f_currency: ['العملة', 'Currency'], f_units: ['وحدة الأرقام', 'Units'],
+  f_base: ['سنة الأساس (آخر سنة فعلية)', 'Base year (last actual year)'], f_base_h: ['التوقع يبدأ من السنة التي بعدها', 'The forecast starts the year after'],
+  f_years: ['سنوات التوقع', 'Forecast years'], u_years: ['سنوات', 'years'],
+  units_k: ['بالآلاف', 'Thousands'], units_m: ['بالملايين', 'Millions'], units_b: ['بالمليارات', 'Billions'], units_u: ['بالوحدة', 'Units (as is)'],
+  ul_k: ['بالآلاف', 'thousands'], ul_m: ['بالملايين', 'millions'], ul_b: ['بالمليارات', 'billions'], ul_u: ['', ''],
+  sec_hist_is: ['قائمة الدخل — سنة الأساس', 'Income statement — base year'],
+  sec_hist_is_lead: ['الأرقام الفعلية لآخر سنة. اكتب المصروفات كأرقام موجبة.', 'Actual figures for the last year. Enter expenses as positive numbers.'],
+  sec_hist_bs: ['الميزانية العمومية — نهاية سنة الأساس', 'Balance sheet — end of base year'],
+  sec_hist_bs_lead: ['يجب أن تتساوى الأصول مع الالتزامات وحقوق الملكية حتى تتوازن السنوات القادمة.', 'Assets must equal liabilities plus equity so future years balance.'],
+  g_assets: ['الأصول', 'Assets'], g_liab: ['الالتزامات', 'Liabilities'], g_eq: ['حقوق الملكية', 'Equity'],
+  bal_ok: ['الميزانية متوازنة ✓', 'Balance sheet balances ✓'],
+  bal_bad: ['الميزانية غير متوازنة — الفرق:', 'Balance sheet is off by:'],
+  bal_fix: ['وازِنها عبر الأرباح المبقاة', 'Balance with retained earnings'],
+  sec_assump: ['افتراضات التوقع', 'Forecast assumptions'],
+  sec_assump_lead: ['قيمة لكل سنة. اضغط ⟵ لنسخ قيمة السنة الأولى لباقي السنوات.', 'One value per year. Press → to copy the first year across.'],
+  fill: ['نسخ ⟵', 'Fill →'],
+  sec_base: ['سنة الأساس', 'Base year'], sec_base_lead: ['نقطة الانطلاق للتوقع.', 'The starting point of the forecast.'],
+  sec_wacc: ['تكلفة رأس المال (WACC)', 'Cost of capital (WACC)'],
+  sec_wacc_lead: ['تُحسب عبر نموذج CAPM، أو أدخل WACC يدويًا.', 'Built up with CAPM, or enter WACC manually.'],
+  wacc_now: ['WACC المحسوب:', 'Calculated WACC:'], ke_now: ['تكلفة الملكية:', 'Cost of equity:'],
+  sec_term: ['القيمة النهائية والتقييم', 'Terminal value & valuation'],
+  sec_term_lead: ['كيف تُحسب قيمة الشركة بعد سنوات التوقع، ومن قيمة المنشأة إلى قيمة السهم.', 'How value beyond the forecast is captured, and the bridge to value per share.'],
+  t_perp: ['النمو الدائم (Gordon)', 'Perpetual growth (Gordon)'], t_exit: ['مضاعف الخروج EV/EBITDA', 'Exit EV/EBITDA multiple'],
+  f_method: ['طريقة القيمة النهائية', 'Terminal method'], f_mid: ['خصم منتصف السنة (Mid-year)', 'Mid-year convention'],
+  g_term: ['القيمة النهائية', 'Terminal value'], g_bridge: ['جسر حقوق الملكية', 'Equity bridge'],
+  btn_sample: ['تعبئة بيانات مثال', 'Fill sample data'], btn_clear: ['مسح الكل', 'Clear all'],
+  btn_gen: ['أنشئ النموذج', 'Build model'], btn_regen: ['تصميم آخر', 'Another design'],
+  btn_xlsx: ['تحميل Excel', 'Download Excel'], design: ['التصميم:', 'Design:'],
+  need_rev: ['أدخل الإيرادات أولًا.', 'Enter revenue first.'],
+  confirm_clear: ['مسح كل المدخلات في هذا التبويب؟', 'Clear all inputs on this tab?'],
+  k_rev: ['الإيرادات', 'Revenue'], k_cagr: ['النمو السنوي المركب', 'CAGR'], k_ni: ['صافي الربح', 'Net income'], k_nm: ['الهامش', 'Margin'],
+  k_cash: ['النقد آخر الفترة', 'Ending cash'], k_debt: ['القروض', 'Debt'], k_ebitda: ['EBITDA', 'EBITDA'], k_ebitdam: ['الهامش', 'Margin'],
+  k_check: ['فحص توازن الميزانية', 'Balance check'], k_ev: ['قيمة المنشأة', 'Enterprise value'], k_tvp: ['القيمة النهائية من EV', 'TV share of EV'],
+  k_eq: ['قيمة حقوق الملكية', 'Equity value'], k_ps: ['القيمة العادلة للسهم', 'Value per share'], k_up: ['مقارنة بالسعر', 'vs. price'],
+  k_wacc: ['WACC', 'WACC'], k_g: ['النمو الدائم', 'Terminal growth'], k_mult: ['مضاعف الخروج', 'Exit multiple'],
+  in_year: ['في', 'in'], all_years: ['كل السنوات', 'all years'],
+  legend_in: ['مدخلات', 'Inputs'], legend_f: ['معادلات', 'Formulas'],
+  w_wacc_g: ['تنبيه: WACC يجب أن يكون أعلى من معدل النمو الدائم وإلا تصبح القيمة النهائية غير منطقية.', 'Warning: WACC must be above the perpetual growth rate, otherwise the terminal value is meaningless.'],
+  footer: ['الأرقام تبقى في متصفحك فقط. ملف Excel يحتوي معادلات حيّة يمكنك تعديلها.', 'Your numbers stay in your browser. The Excel file contains live formulas you can edit.'],
+  stale: ['تم تحديث الأرقام', 'Numbers updated'],
+  hint_h_inv: ['قيمة المخزون في نهاية سنة الأساس', 'Inventory value at year end'],
+  hint_h_ar: ['مبالغ مستحقة من العملاء', 'Amounts owed by customers'],
+  hint_h_ap: ['مبالغ مستحقة للموردين', 'Amounts owed to suppliers'],
+  hint_d_rev: ['آخر سنة فعلية', 'Last actual year'],
+  hint_w_beta: ['حساسية السهم للسوق (1 = مثل السوق)', 'Sensitivity to the market (1 = market)'],
+  hint_w_ovr: ['اتركه 0 لاستخدام المحسوب', 'Leave 0 to use the calculated one'],
+  hint_e_shares: ['بنفس وحدة الأرقام أعلاه', 'In the same units as above'],
+  hint_t_mult: ['يُستخدم مع طريقة المضاعف', 'Used with the multiple method'],
+  hint_t_g: ['يُستخدم مع طريقة النمو الدائم', 'Used with the perpetuity method']
+};
+
+/* ---------------- field definitions ---------------- */
+// kind: cur (money), pct, days, beta, mult, num, price
+const DEF = {
+  dcf: {
+    sections: [
+      { t: 'sec_base', lead: 'sec_base_lead', fields: [['d_rev', 'cur']] },
+      { t: 'sec_assump', lead: 'sec_assump_lead', grid: [['b_g', 'pct'], ['b_m', 'pct'], ['b_da', 'pct'], ['b_capex', 'pct'], ['b_nwc', 'pct'], ['b_tax', 'pct']] },
+      { t: 'sec_wacc', lead: 'sec_wacc_lead', fields: [['w_rf', 'pct'], ['w_beta', 'beta'], ['w_erp', 'pct'], ['w_kd', 'pct'], ['w_tax', 'pct'], ['w_wd', 'pct'], ['w_ovr', 'pct']], extra: 'wacc' },
+      { t: 'sec_term', lead: 'sec_term_lead', groups: [
+        { t: 'g_term', fields: [['t_method', 'method'], ['t_g', 'pct'], ['t_mult', 'mult'], ['t_mid', 'check']] },
+        { t: 'g_bridge', fields: [['e_debt', 'cur'], ['e_cash', 'cur'], ['e_min', 'cur']] },
+        { t: '', fields: [['e_shares', 'num'], ['e_price', 'price']] }
+      ] }
+    ],
+    sample: {
+      company: ['شركة المثال للتجزئة', 'Sample Retail Co.'],
+      s: { d_rev: 1200, w_rf: 4.5, w_beta: 1.1, w_erp: 6, w_kd: 6, w_tax: 15, w_wd: 25, w_ovr: 0, t_method: 1, t_g: 2.5, t_mult: 10, t_mid: true, e_debt: 300, e_cash: 150, e_min: 0, e_shares: 100, e_price: 20 },
+      g: { b_g: [8, 7, 6, 5, 4], b_m: [20, 20.5, 21, 21.5, 22], b_da: [4], b_capex: [5], b_nwc: [10], b_tax: [15] }
+    },
+    defaults: { s: { t_method: 1, t_mid: true }, g: {} }
+  },
+  tsm: {
+    sections: [
+      { t: 'sec_hist_is', lead: 'sec_hist_is_lead', fields: [['h_rev', 'cur'], ['h_cogs', 'cur'], ['h_sga', 'cur'], ['h_da', 'cur'], ['h_int', 'cur'], ['h_tax', 'cur']] },
+      { t: 'sec_hist_bs', lead: 'sec_hist_bs_lead', groups: [
+        { t: 'g_assets', fields: [['h_cash', 'cur'], ['h_ar', 'cur'], ['h_inv', 'cur'], ['h_oca', 'cur'], ['h_ppe', 'cur'], ['h_onca', 'cur']] },
+        { t: 'g_liab', fields: [['h_ap', 'cur'], ['h_acc', 'cur'], ['h_debt', 'cur'], ['h_oltl', 'cur']] },
+        { t: 'g_eq', fields: [['h_cs', 'cur'], ['h_re', 'cur']] }
+      ], extra: 'balance' },
+      { t: 'sec_assump', lead: 'sec_assump_lead', grid: [['a_g', 'pct'], ['a_gm', 'pct'], ['a_sga', 'pct'], ['a_da', 'pct'], ['a_capex', 'pct'], ['a_dso', 'days'], ['a_dio', 'days'], ['a_dpo', 'days'], ['a_tax', 'pct'], ['a_int', 'pct'], ['a_rep', 'cur'], ['a_pay', 'pct']] }
+    ],
+    sample: {
+      company: ['شركة المثال للتجزئة', 'Sample Retail Co.'],
+      s: { h_rev: 1200, h_cogs: 720, h_sga: 240, h_da: 48, h_int: 15, h_tax: 27, h_cash: 150, h_ar: 160, h_inv: 130, h_oca: 40, h_ppe: 600, h_onca: 70, h_ap: 110, h_acc: 50, h_debt: 300, h_oltl: 40, h_cs: 400, h_re: 250 },
+      g: { a_g: [8, 7, 6, 5, 5], a_gm: [40], a_sga: [20], a_da: [4], a_capex: [5], a_dso: [48], a_dio: [66], a_dpo: [56], a_tax: [15], a_int: [5], a_rep: [30], a_pay: [30] }
+    },
+    defaults: { s: {}, g: {} }
+  }
+};
+const UNIT = { cur: null, pct: '%', days: ['يوم', 'days'], beta: '×', mult: 'x', num: '', price: null };
+
+/* ---------------- state ---------------- */
+const KEY = 'modeler.v1';
+let st;
+try { st = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { st = null; }
+if (!st || !st.dcf) st = {
+  lang: 'ar', tab: 'dcf',
+  c: { company: '', currency: 'SAR', units: 'm', base: new Date().getFullYear() - 1, years: 5 },
+  dcf: JSON.parse(JSON.stringify(DEF.dcf.defaults)), tsm: JSON.parse(JSON.stringify(DEF.tsm.defaults))
+};
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} };
+const lang = () => (st.lang === 'en' ? 1 : 0);
+const t = (k) => (T[k] ? T[k][lang()] : L[k] ? L[k][lang()] : k);
+const lab = (k) => (L[k] ? L[k][lang()] : k);
+const lab2 = (k) => (L[k] ? L[k][1 - lang()] : '');
+const $ = (s, r) => (r || document).querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const parse = (s) => {
+  if (s === '' || s == null) return '';
+  s = String(s).replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[٫]/g, '.').replace(/[,٬\s%]/g, '');
+  if (/^\(.*\)$/.test(s)) s = '-' + s.slice(1, -1);
+  const v = parseFloat(s); return isFinite(v) ? v : '';
+};
+const show = (v) => (v === '' || v == null ? '' : String(v));
+
+let current = null; // {model, theme}
+let activeSheet = 0;
+
+/* ---------------- render static text ---------------- */
+function renderText() {
+  document.documentElement.lang = st.lang; document.documentElement.dir = lang() ? 'ltr' : 'rtl';
+  document.querySelectorAll('[data-t]').forEach((el) => { el.textContent = t(el.dataset.t); });
+  $('#langBtn').textContent = lang() ? 'عربي' : 'EN';
+  $('#introTitle').textContent = t('intro_' + st.tab);
+  $('#introText').textContent = t('intro_' + st.tab + '_p');
+  document.querySelectorAll('#c_units option').forEach((o) => { o.textContent = t('units_' + o.value); });
+  document.querySelectorAll('nav.tabs button').forEach((b) => b.setAttribute('aria-selected', b.dataset.tab === st.tab));
+  $('#c_company').placeholder = DEF[st.tab].sample.company[lang()];
+}
+
+function fillSetup() {
+  $('#c_company').value = st.c.company; $('#c_currency').value = st.c.currency;
+  $('#c_units').value = st.c.units; $('#c_base').value = st.c.base; $('#c_years').value = String(st.c.years);
+}
+
+/* ---------------- forms ---------------- */
+function unitFor(kind) {
+  if (kind === 'cur') return st.c.currency;
+  if (kind === 'price') return st.c.currency;
+  const u = UNIT[kind]; return Array.isArray(u) ? u[lang()] : (u || '');
+}
+function fieldHTML(id, kind) {
+  const m = st[st.tab], v = m.s[id];
+  const hint = T['hint_' + id] ? `<span class="hint">${esc(t('hint_' + id))}</span>` : '';
+  const en = lang() ? '' : `<span class="en">${esc(lab2(id))}</span>`;
+  const shortLab = (L[id] ? L[id][lang()] : id).replace(/\s*\(.*?\)\s*$/, '');
+  if (kind === 'method') {
+    return `<div class="f"><label for="i_${id}">${esc(t('f_method'))}</label><div class="box"><select id="i_${id}" data-s="${id}">
+      <option value="1"${+v !== 2 ? ' selected' : ''}>${esc(t('t_perp'))}</option><option value="2"${+v === 2 ? ' selected' : ''}>${esc(t('t_exit'))}</option></select></div></div>`;
+  }
+  if (kind === 'check') {
+    return `<label class="chk"><input type="checkbox" data-s="${id}" ${v ? 'checked' : ''}> ${esc(t('f_mid'))}</label>`;
+  }
+  const u = unitFor(kind);
+  return `<div class="f"><label for="i_${id}">${esc(id === 'w_ovr' ? lab(id).replace(/\s*\(.*\)/, '') : shortLab)}${en}</label>
+    <div class="box"><input type="text" inputmode="decimal" dir="ltr" id="i_${id}" data-s="${id}" value="${esc(show(v))}" placeholder="0" autocomplete="off">${u ? `<span class="u">${esc(u)}</span>` : ''}</div>${hint}</div>`;
+}
+function gridHTML(rows) {
+  const m = st[st.tab], N = st.c.years, b = +st.c.base;
+  let h = `<div class="gridwrap"><table class="g"><thead><tr><th class="lbl"></th>`;
+  for (let i = 1; i <= N; i++) h += `<th>${b + i}E</th>`;
+  h += `<th></th></tr></thead><tbody>`;
+  for (const [id, kind] of rows) {
+    const vals = m.g[id] || [];
+    const u = unitFor(kind);
+    h += `<tr><td class="lbl">${esc(lab(id))}${lang() ? '' : `<small>${esc(lab2(id))}</small>`}</td>`;
+    for (let i = 0; i < N; i++) {
+      const v = vals[i] !== undefined ? vals[i] : (vals.length ? vals[vals.length - 1] : '');
+      h += `<td><input type="text" inputmode="decimal" dir="ltr" data-g="${id}" data-i="${i}" value="${esc(show(v))}" placeholder="${esc(u)}" aria-label="${esc(lab(id))} ${b + i + 1}"></td>`;
+    }
+    h += `<td><button class="fill" data-fill="${id}" title="${esc(t('fill'))}">${esc(t('fill'))}</button></td></tr>`;
+  }
+  return h + `</tbody></table></div>`;
+}
+function renderForms() {
+  const d = DEF[st.tab];
+  let h = '', n = 2;
+  for (const sec of d.sections) {
+    h += `<section class="card"><h2><span class="n">${n++}</span>${esc(t(sec.t))}</h2><p class="lead">${esc(t(sec.lead))}</p>`;
+    if (sec.fields) h += `<div class="cols">${sec.fields.map(([id, k]) => fieldHTML(id, k)).join('')}</div>`;
+    if (sec.groups) h += `<div class="split">${sec.groups.map((g) => `<div class="grp">${g.t ? `<h3>${esc(t(g.t))}</h3>` : '<h3>&nbsp;</h3>'}${g.fields.map(([id, k]) => fieldHTML(id, k)).join('')}</div>`).join('')}</div>`;
+    if (sec.grid) h += gridHTML(sec.grid);
+    if (sec.extra) h += `<div id="extra_${sec.extra}"></div>`;
+    h += `</section>`;
+  }
+  $('#forms').innerHTML = h;
+  // keep grid arrays the right length so the model sees what the user sees
+  updateExtras();
+}
+function updateExtras() {
+  const m = st[st.tab];
+  const n = (k) => +parse(m.s[k]) || 0;
+  const bal = $('#extra_balance');
+  if (bal) {
+    const a = ['h_cash', 'h_ar', 'h_inv', 'h_oca', 'h_ppe', 'h_onca'].reduce((s, k) => s + n(k), 0);
+    const le = ['h_ap', 'h_acc', 'h_debt', 'h_oltl', 'h_cs', 'h_re'].reduce((s, k) => s + n(k), 0);
+    const diff = Math.round((a - le) * 100) / 100;
+    const f = (x) => x.toLocaleString('en-US', { maximumFractionDigits: 2 });
+    bal.innerHTML = Math.abs(diff) < 0.005
+      ? `<div class="status ok">${esc(t('bal_ok'))} <span dir="ltr">${f(a)} = ${f(le)}</span></div>`
+      : `<div class="status bad">${esc(t('bal_bad'))} <b dir="ltr">${f(diff)}</b><button class="ghost" id="fixBal">${esc(t('bal_fix'))}</button></div>`;
+    const fb = $('#fixBal');
+    if (fb) fb.onclick = () => { m.s.h_re = Math.round((n('h_re') + diff) * 100) / 100; $('#i_h_re').value = m.s.h_re; save(); updateExtras(); liveUpdate(); };
+  }
+  const w = $('#extra_wacc');
+  if (w) {
+    const ke = (n('w_rf') + n('w_beta') * n('w_erp')) / 100;
+    const kd = n('w_kd') / 100 * (1 - n('w_tax') / 100), wd = n('w_wd') / 100;
+    const wacc = (1 - wd) * ke + wd * kd;
+    w.innerHTML = `<div class="status ok">${esc(t('ke_now'))} <b dir="ltr">${(ke * 100).toFixed(2)}%</b> · ${esc(t('wacc_now'))} <b dir="ltr">${(wacc * 100).toFixed(2)}%</b></div>`;
+  }
+}
+
+/* ---------------- events ---------------- */
+document.addEventListener('input', (e) => {
+  const el = e.target, m = st[st.tab];
+  if (el.dataset.s) {
+    m.s[el.dataset.s] = el.type === 'checkbox' ? el.checked : el.tagName === 'SELECT' ? +el.value : parse(el.value);
+  } else if (el.dataset.g) {
+    const id = el.dataset.g, i = +el.dataset.i;
+    const arr = m.g[id] = (m.g[id] || []).slice();
+    // materialise implied values so editing one year doesn't move others
+    const N = st.c.years;
+    for (let j = 0; j < N; j++) if (arr[j] === undefined) arr[j] = arr.length ? arr[arr.length - 1] ?? '' : '';
+    arr[i] = parse(el.value);
+  } else if (el.id && el.id.startsWith('c_')) {
+    const k = el.id.slice(2);
+    st.c[k] = k === 'years' ? +el.value : k === 'base' ? (parseInt(parse(el.value)) || st.c.base) : el.value;
+    if (k === 'years' || k === 'base' || k === 'currency') renderForms();
+  } else return;
+  save(); updateExtras(); liveUpdate();
+});
+document.addEventListener('change', (e) => { if (e.target.matches('select,input[type=checkbox]')) e.target.dispatchEvent(new Event('input', { bubbles: true })); });
+document.addEventListener('click', (e) => {
+  const f = e.target.closest('[data-fill]');
+  if (f) {
+    const id = f.dataset.fill, m = st[st.tab];
+    const first = (m.g[id] || [])[0];
+    m.g[id] = Array(st.c.years).fill(first === undefined ? '' : first);
+    document.querySelectorAll(`input[data-g="${id}"]`).forEach((i) => { i.value = show(first); });
+    save(); liveUpdate();
+  }
+  const tab = e.target.closest('nav.tabs button');
+  if (tab && tab.dataset.tab !== st.tab) {
+    st.tab = tab.dataset.tab; save(); current = null; $('#out').hidden = true; $('#msg').textContent = '';
+    renderText(); renderForms();
+  }
+});
+$('#langBtn').onclick = () => { st.lang = lang() ? 'ar' : 'en'; save(); renderText(); renderForms(); if (current) renderOut(false); };
+$('#sampleBtn').onclick = () => {
+  const s = DEF[st.tab].sample;
+  st[st.tab] = { s: Object.assign({}, s.s), g: JSON.parse(JSON.stringify(s.g)) };
+  if (!st.c.company) st.c.company = s.company[lang()];
+  fillSetup(); save(); renderForms(); liveUpdate();
+};
+$('#clearBtn').onclick = () => {
+  if (!confirm(t('confirm_clear'))) return;
+  st[st.tab] = JSON.parse(JSON.stringify(DEF[st.tab].defaults)); save(); renderForms();
+  current = null; $('#out').hidden = true;
+};
+$('#genBtn').onclick = () => generate(true);
+
+/* ---------------- model + theme ---------------- */
+function nextTheme() {
+  let deck = [];
+  try { deck = JSON.parse(localStorage.getItem('modeler.deck') || '[]'); } catch (e) {}
+  const last = localStorage.getItem('modeler.last');
+  if (!deck.length) {
+    deck = E.THEMES.map((x) => x.id);
+    for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]]; }
+    if (deck[0] === last) deck.push(deck.shift());
+  }
+  const id = deck.shift();
+  try { localStorage.setItem('modeler.deck', JSON.stringify(deck)); localStorage.setItem('modeler.last', id); } catch (e) {}
+  return E.THEMES.find((x) => x.id === id) || E.THEMES[0];
+}
+function buildModel() {
+  const m = st[st.tab];
+  const inp = { years: st.c.years, baseYear: +st.c.base, s: m.s, g: m.g };
+  return st.tab === 'dcf' ? E.buildDCF(inp) : E.buildTSM(inp);
+}
+function decimals() {
+  const m = st[st.tab]; const r = +parse(st.tab === 'dcf' ? m.s.d_rev : m.s.h_rev) || 0;
+  return Math.abs(r) < 10000;
+}
+function generate(newTheme) {
+  const m = st[st.tab];
+  const rev = +parse(st.tab === 'dcf' ? m.s.d_rev : m.s.h_rev);
+  if (!rev) { $('#msg').textContent = t('need_rev'); return; }
+  $('#msg').textContent = '';
+  const theme = newTheme || !current ? nextTheme() : current.theme;
+  current = { model: buildModel(), theme };
+  if (newTheme) activeSheet = st.tab === 'dcf' ? 2 : 1;
+  renderOut(newTheme);
+}
+let liveTimer;
+function liveUpdate() {
+  if (!current) return;
+  clearTimeout(liveTimer);
+  liveTimer = setTimeout(() => {
+    try { current.model = buildModel(); renderOut(false); } catch (e) { console.error(e); }
+  }, 250);
+}
+
+/* ---------------- output rendering ---------------- */
+function unitsLabel() { return T['ul_' + st.c.units][lang()]; }
+function renderOut(scroll) {
+  const { model: m, theme: th } = current, dec = decimals();
+  const out = $('#out'); out.hidden = false;
+  const fv = (v, k) => E.fmtJS(v, k, dec);
+  const kpiHTML = m.kpis.map((k) => {
+    let sub = '';
+    if (k.sub) {
+      const cls = k.sub.signed ? (k.sub.v >= 0 ? 'up' : 'down') : '';
+      sub = `<div class="ks">${esc(t(k.sub.k))}: <b class="${cls}" dir="ltr">${(k.sub.signed && k.sub.v > 0 ? '+' : '') + fv(k.sub.v, k.sub.fmt)}</b></div>`;
+    } else if (!k.check) sub = `<div class="ks">${esc(st.c.currency)} ${esc(unitsLabel())}</div>`;
+    const lastY = m.meta.labels[m.meta.N];
+    const lbl = k.check ? t(k.k) : t(k.k) + (m.meta.type === 'tsm' ? ` · ${lastY}` : '');
+    const val = k.check ? (k.v < 0.005 ? 'OK ✓' : fv(k.v, 'num')) : fv(k.v, k.fmt);
+    return `<div class="kpi${k.hero ? ' hero' : ''}"><div class="kl">${esc(lbl)}</div><div class="kv">${esc(val)}</div>${sub}</div>`;
+  }).join('');
+  // the "big" layout needs a hero card
+  const kpiVariant = th.kpi === 'big' && !m.kpis.some((k) => k.hero) ? 'cards' : th.kpi;
+  const name = th[lang() ? 'en' : 'ar'];
+  const title = st.c.company || DEF[st.tab].sample.company[lang()];
+  const warn = (m.warnings || []).map((w) => `<div class="warn">${esc(t(w))}</div>`).join('');
+  const css = `--p:#${th.pri};--a:#${th.acc};--band:#${th.band};--tot:#${th.tot};--ink:#${th.ink};--bg:#${th.bg};--paper:#${th.paper};--inF:#${th.inFont};--inB:#${th.inFill};--wf:${th.wfont}`;
+  out.innerHTML = `
+    <div class="otool">
+      <span class="tname">${esc(t('design'))} <b>${esc(name)}</b><span class="sw"><i style="background:#${th.pri}"></i><i style="background:#${th.acc}"></i><i style="background:#${th.tot}"></i></span></span>
+      <span class="sp"></span>
+      <button class="btn soft" id="regenBtn">🎲 ${esc(t('btn_regen'))}</button>
+      <button class="btn primary" id="xlsxBtn">⬇ ${esc(t('btn_xlsx'))}</button>
+    </div>
+    <article class="doc${th.dark ? ' dark' : ''}" data-head="${th.head}" data-kpi="${kpiVariant}" data-band="${th.bandOn ? 1 : 0}" style="${css}">
+      <div class="dhead"><div class="kicker">${esc(lab(m.meta.type === 'dcf' ? 'm_dcf' : 'm_tsm'))}</div><h2>${esc(title)}</h2>
+        <p>${esc(st.c.currency)} ${esc(unitsLabel())} · ${esc(m.meta.labels[0])} – ${esc(m.meta.labels[m.meta.N])}</p></div>
+      <div class="kpis">${kpiHTML}</div>
+      ${warn}
+      <div class="stabs" role="tablist">${m.sheets.map((s, i) => `<button role="tab" data-sheet="${i}" aria-selected="${i === activeSheet}">${esc(lab(s.titleKey))}</button>`).join('')}</div>
+      <div class="legend"><span>${esc(t('legend_in'))}</span><span>${esc(t('legend_f'))}</span></div>
+      <div class="sheetbox"><div class="sheetwrap">${sheetHTML(m.sheets[activeSheet] || m.sheets[0], fv)}</div></div>
+    </article>`;
+  $('#regenBtn').onclick = () => generate(true);
+  $('#xlsxBtn').onclick = download;
+  out.querySelectorAll('[data-sheet]').forEach((b) => b.onclick = () => {
+    activeSheet = +b.dataset.sheet;
+    out.querySelectorAll('[data-sheet]').forEach((x) => x.setAttribute('aria-selected', x === b));
+    out.querySelector('.sheetwrap').innerHTML = sheetHTML(m.sheets[activeSheet], fv);
+  });
+  if (scroll) out.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function sheetHTML(s, fv) {
+  let h = '<table class="mt">';
+  s.blocks.forEach((b, bi) => {
+    if (bi) h += `<tr class="sp"><td colspan="${s.ncols + 1}"></td></tr>`;
+    const heads = b.series ? s.colLabels : (b.headLabels || []).map((x) => (Array.isArray(x) ? x[lang()] : x));
+    h += `<tr class="bh"><th class="l">${esc(lab(b.titleKey))}</th>`;
+    for (let c = 0; c < s.ncols; c++) h += `<th>${esc(heads[c] || '')}</th>`;
+    h += '</tr>';
+    for (const row of b.rows) {
+      const label = row.label ? row.label[lang()] : lab(row.id);
+      const ind = !/total|grand|strong|key|sens|axisrow/.test(row.style);
+      h += `<tr class="r ${row.style}"><td class="l${ind ? ' ind' : ''}">${esc(label)}</td>`;
+      for (let c = 0; c < s.ncols; c++) {
+        const def = row.cells[c];
+        if (!def) { h += '<td class="v"></td>'; continue; }
+        const v = row.vals[c], k = def.fmt || row.fmt;
+        const cls = ['v', def.input ? 'in' : '', def.muted ? 'muted' : '', def.st || '', row.style === 'check' && Math.abs(v) >= 0.005 ? 'bad' : ''].join(' ');
+        h += `<td class="${cls}">${esc(fv(v, k))}</td>`;
+      }
+      h += '</tr>';
+    }
+  });
+  return h + '</table>';
+}
+
+async function download() {
+  const btn = $('#xlsxBtn'); btn.disabled = true;
+  try {
+    // build fresh so the file matches the latest inputs
+    current.model = buildModel();
+    const wb = await E.toWorkbook(window.ExcelJS, current.model, {
+      lang: st.lang, theme: current.theme, company: st.c.company || DEF[st.tab].sample.company[lang()],
+      currency: st.c.currency, unitsLabel: unitsLabel(), dec: decimals()
+    });
+    const buf = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    // ASCII-only: some browsers silently drop non-Latin download names
+    const nm = (st.c.company || '').replace(/[^A-Za-z0-9 _.-]+/g, '').trim().replace(/\s+/g, '_') || 'Modeler';
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${nm}_${st.tab === 'dcf' ? 'DCF' : '3-Statement'}_${current.theme.id}.xlsx`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  } catch (e) { console.error(e); alert('Excel export failed: ' + e.message); }
+  finally { btn.disabled = false; }
+}
+
+/* ---------------- boot ---------------- */
+renderText(); fillSetup(); renderForms();
+})();
+</script>
+</body>
+</html>
