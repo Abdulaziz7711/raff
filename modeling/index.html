@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -42,7 +42,7 @@ button,input,select{font:inherit;color:inherit}
 .wrap{max-width:1180px;margin:0 auto;padding:0 16px}
 
 /* top bar */
-.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--panel) 92%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--panel) 92%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 .top .wrap{display:flex;align-items:center;gap:14px;height:62px}
 .brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:17px;white-space:nowrap}
 .brand i{display:grid;place-items:center;width:30px;height:30px;border-radius:8px;background:var(--brand);color:var(--brand-fg);font-style:normal;font-size:15px}
@@ -297,7 +297,8 @@ const T = {
   btn_gen: ['أنشئ النموذج', 'Build model'], btn_regen: ['تصميم آخر', 'Another design'],
   btn_xlsx: ['تحميل Excel', 'Download Excel'], design: ['التصميم:', 'Design:'],
   need_rev: ['أدخل الإيرادات أولًا.', 'Enter revenue first.'],
-  confirm_clear: ['مسح كل المدخلات في هذا التبويب؟', 'Clear all inputs on this tab?'],
+  confirm_clear: ['اضغط مرة ثانية للتأكيد', 'Click again to confirm'],
+  dl_fail: ['تعذّر تحميل الملف:', 'Could not save the file:'],
   k_rev: ['الإيرادات', 'Revenue'], k_cagr: ['النمو السنوي المركب', 'CAGR'], k_ni: ['صافي الربح', 'Net income'], k_nm: ['الهامش', 'Margin'],
   k_cash: ['النقد آخر الفترة', 'Ending cash'], k_debt: ['القروض', 'Debt'], k_ebitda: ['EBITDA', 'EBITDA'], k_ebitdam: ['الهامش', 'Margin'],
   k_check: ['فحص توازن الميزانية', 'Balance check'], k_ev: ['قيمة المنشأة', 'Enterprise value'], k_tvp: ['القيمة النهائية من EV', 'TV share of EV'],
@@ -365,7 +366,7 @@ const KEY = 'modeler.v1';
 let st;
 try { st = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { st = null; }
 if (!st || !st.dcf) st = {
-  lang: 'ar', tab: 'dcf',
+  lang: 'en', tab: 'dcf',
   c: { company: '', currency: 'SAR', units: 'm', base: new Date().getFullYear() - 1, years: 5 },
   dcf: JSON.parse(JSON.stringify(DEF.dcf.defaults)), tsm: JSON.parse(JSON.stringify(DEF.tsm.defaults))
 };
@@ -385,6 +386,7 @@ const parse = (s) => {
 const show = (v) => (v === '' || v == null ? '' : String(v));
 
 let current = null; // {model, theme}
+const downloadsNS = window.claude && window.claude.use ? Promise.resolve(window.claude.use('downloads')).catch(() => null) : Promise.resolve(null);
 let activeSheet = 0;
 
 /* ---------------- render static text ---------------- */
@@ -525,7 +527,13 @@ $('#sampleBtn').onclick = () => {
   fillSetup(); save(); renderForms(); liveUpdate();
 };
 $('#clearBtn').onclick = () => {
-  if (!confirm(t('confirm_clear'))) return;
+  const cb = $('#clearBtn');
+  if (!cb.dataset.armed) {
+    cb.dataset.armed = '1'; cb.textContent = t('confirm_clear');
+    setTimeout(() => { delete cb.dataset.armed; cb.textContent = t('btn_clear'); }, 3000);
+    return;
+  }
+  delete cb.dataset.armed; cb.textContent = t('btn_clear');
   st[st.tab] = JSON.parse(JSON.stringify(DEF[st.tab].defaults)); save(); renderForms();
   current = null; $('#out').hidden = true;
 };
@@ -535,7 +543,7 @@ $('#genBtn').onclick = () => generate(true);
 function nextTheme() {
   let deck = [];
   try { deck = JSON.parse(localStorage.getItem('modeler.deck') || '[]'); } catch (e) {}
-  const last = localStorage.getItem('modeler.last');
+  let last = null; try { last = localStorage.getItem('modeler.last'); } catch (e) {}
   if (!deck.length) {
     deck = E.THEMES.map((x) => x.id);
     for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]]; }
@@ -659,12 +667,20 @@ async function download() {
     const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     // ASCII-only: some browsers silently drop non-Latin download names
     const nm = (st.c.company || '').replace(/[^A-Za-z0-9 _.-]+/g, '').trim().replace(/\s+/g, '_') || 'Modeler';
+    const fname = `${nm}_${st.tab === 'dcf' ? 'DCF' : '3-Statement'}_${current.theme.id}.xlsx`;
+    // inside claude.ai the page must ask the viewer to save; elsewhere a normal link download works
+    const host = await downloadsNS;
+    if (host) {
+      try { await host.save({ filename: fname, data: blob }); }
+      catch (err) { if (err && err.code !== 'declined') $('#msg').textContent = t('dl_fail') + ' ' + (err.message || err.code); }
+      return;
+    }
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `${nm}_${st.tab === 'dcf' ? 'DCF' : '3-Statement'}_${current.theme.id}.xlsx`;
+    a.download = fname;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-  } catch (e) { console.error(e); alert('Excel export failed: ' + e.message); }
+  } catch (e) { console.error(e); $('#msg').textContent = t('dl_fail') + ' ' + e.message; }
   finally { btn.disabled = false; }
 }
 
